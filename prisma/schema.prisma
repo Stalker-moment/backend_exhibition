@@ -1,0 +1,62 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Account {
+  id        String   @id @default(uuid()) // Using UUID for a standard GUID
+  email     String   @unique
+  password  String
+  role      String   @default("user")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  contact   Contact?
+}
+
+model Contact {
+  id        String   @id @default(uuid()) // Assuming UUID for a unique identifier
+  firstName String
+  lastName  String
+  email     String   @unique
+  phone     String
+  noReg     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  picture   String?
+  account   Account  @relation(fields: [id], references: [id])
+}
+
+model Logs {
+  id          Int      @id @default(autoincrement()) // Integer ID with auto-increment
+  timestamp   DateTime @default(now())
+  description String?
+}
+
+model Configuration {
+  id            Int      @id @default(autoincrement())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model DataPlc {
+  id                Int      @id @default(autoincrement()) // Integer ID with auto-increment
+  timestamp         DateTime @default(now())
+  Power             Boolean
+  Plc_Running       Boolean
+  Air               Boolean
+  MachiningComp     Boolean
+  PLCBattAlarm      Boolean
+  CycleTimeOver     Boolean
+  PartJudgmentFault Boolean
+}
