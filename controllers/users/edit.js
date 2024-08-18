@@ -87,7 +87,34 @@ router.post("/edit", async (req, res) => {
       return res.status(201).json({ message: `Succes update account and password` });
     } 
 
-    return res.status(200).json({ message: `Succes update account (${decoded.email})` });
+    //search for the updated account
+    const updatedAccount2 = await prisma.account.findUnique({
+      where: {
+        email: decoded.email,
+      },
+      include: {
+        contact: true, // Include the contact relation
+      },
+    });
+
+    //make a new jwt token
+    const expired = Date.now() + 60 * 60 * 60 * 1000; // 1 day
+
+    const newToken = jwt.sign(
+      {
+        id: updatedAccount2.id,
+        firstName: updatedAccount2.contact.firstName,
+        lastName: updatedAccount2.contact.lastName,
+        role: updatedAccount2.role,
+        email: updatedAccount2.email,
+        phone: updatedAccount2.contact.phone,
+        noReg: updatedAccount2.contact.noReg,
+        expired: expired,
+      },
+      process.env.JWT_SECRET
+    );
+
+    return res.status(200).json({ message: `Succes update account (${decoded.email})`, token: newToken });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Internal server error" });

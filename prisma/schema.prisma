@@ -33,7 +33,7 @@ model Contact {
   noReg     String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  picture   String?
+  picture   String  @default("/default.png")
   account   Account  @relation(fields: [id], references: [id])
 }
 
@@ -44,19 +44,71 @@ model Logs {
 }
 
 model Configuration {
-  id            Int      @id @default(autoincrement())
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id               Int      @id @default(autoincrement())
+  AutoButton       Boolean
+  FaultResetButton Boolean
+  StopButton       Boolean
+  MasterOnButton   Boolean
+  updatedAt        DateTime @updatedAt
+}
+
+model Sensor {
+  id        Int      @id @default(autoincrement()) // Integer ID with auto-increment
+  timestamp DateTime @default(now())
+  Current   Float
+  Pressure  Float
+  updateAt  DateTime @updatedAt
+}
+
+model SensorLog {
+  id        Int      @id @default(autoincrement()) // Integer ID with auto-increment
+  timestamp DateTime @default(now())
+  Current   Float
+  Pressure  Float
+  updateAt  DateTime @updatedAt
 }
 
 model DataPlc {
-  id                Int      @id @default(autoincrement()) // Integer ID with auto-increment
-  timestamp         DateTime @default(now())
-  Power             Boolean
-  Plc_Running       Boolean
-  Air               Boolean
-  MachiningComp     Boolean
-  PLCBattAlarm      Boolean
-  CycleTimeOver     Boolean
-  PartJudgmentFault Boolean
+  id            Int      @id @default(autoincrement()) // Integer ID with auto-increment
+  Power         Boolean
+  DownTime      Boolean
+  Air           Boolean
+  MachiningComp Boolean
+  L40Parts      Boolean
+  L30Parts      Boolean
+  PLCRun        Boolean
+  MasterOn      Boolean
+  updatedAt     DateTime @updatedAt
+}
+
+model oeeConfig {
+  id                Int      @id //Integer ID custom for OEE/cycle
+  idNow             Int
+  targetProduction  Int
+  targetCycleTimeOK Int
+  targetCycleTimeNG Int
+  onDownTime        Boolean
+  updatedAt         DateTime @updatedAt
+}
+
+model oeeProcess {
+  id          Int      @id @default(autoincrement())
+  idNow       Int
+  process     Int
+  isOK        Boolean?
+  target      Int
+  startTime   DateTime
+  endTime     DateTime?
+  processTime Int?
+  updatedAt   DateTime @updatedAt
+}
+
+model DownTime {
+  id          Int       @id @default(autoincrement()) // Integer ID with auto-increment
+  idNow       Int
+  timeStart   DateTime  @default(now())
+  timeEnd     DateTime?
+  timeDown    Int?
+  timeDownStr String?
+  description String?
 }

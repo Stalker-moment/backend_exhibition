@@ -14,6 +14,9 @@ const usersLogin = require("./controllers/users/login");
 const usersRegister = require("./controllers/users/register");
 const userEdit = require("./controllers/users/edit");
 const InternalSystem = require("./controllers/internal/system");
+const internalOee = require("./controllers/internal/oee");
+const internalDownTime = require("./controllers/internal/downTime");
+const internalcount = require("./controllers/internal/count");
 
 // Load Functions
 const sendCommand = require("./functions/sendCommand");
@@ -23,6 +26,11 @@ const sendToday = require("./functions/sendToday");
 const sendWeek = require("./functions/sendWeek");
 const sendYear = require("./functions/sendYear");
 const sendUsageToday = require("./functions/sendUsageToday");
+const sendOEE = require("./functions/sendOEE");
+const sendOutput = require("./functions/sendOutput");
+const sendProcess = require("./functions/sendProcess");
+const sendDowntimeLogs = require("./functions/sendDowntimeLogs");
+const sendDowntimeChart = require("./functions/sendDowntimeChart");
 
 //-----------------Configuration------------------//
 app.use(bodyParser.json());
@@ -33,7 +41,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.enable("trust proxy");
 app.set("view engine", "ejs");
 
-const PORT = process.env.PORT || 2025;
+const PORT = process.env.PORT || 1777;
 
 //-----------------Routes------------------//
 
@@ -45,6 +53,9 @@ app.use("/api/users", usersLogin);
 app.use("/api/users", usersRegister);
 app.use("/api/users", userEdit);
 app.use("/api/internal", InternalSystem);
+app.use("/api/internal", internalOee);
+app.use("/api/internal", internalDownTime);
+app.use("/api/internal", internalcount);
 
 //handler if route not found
 app.use((req, res) => {
@@ -58,7 +69,20 @@ const wss = new WebSocket.Server({ server });
 // Setup WebSocket connections
 wss.on("connection", async (ws, req) => {
   console.log(`WebSocket client connected from ${req.url}`);
-  const requestArray = ["/logs", "/count", "/today", "/week", "/year", "/usage-today", "/receive"];
+  const requestArray = [
+    "/logs",
+    "/count",
+    "/today",
+    "/week",
+    "/year",
+    "/usage-today",
+    "/receive",
+    "/oee",
+    "/output",
+    "/process",
+    "/downtime-logs",
+    "/downtime-chart",
+  ];
 
   if (!requestArray.some((endpoint) => req.url.startsWith(endpoint))) {
     ws.send(JSON.stringify({ error: "Invalid request URL" }));
@@ -72,24 +96,24 @@ wss.on("connection", async (ws, req) => {
     let filterDate = null;
 
     if (dateParam) {
-        const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-        if (dateRegex.test(dateParam)) {
-            const [year, month, day] = dateParam.split("-").map(Number);
-            filterDate = new Date(year, month - 1, day);
-        } else {
-            ws.send(
-                JSON.stringify({ error: "Invalid date format. Use YYYY-MM-DD." })
-            );
-            ws.close();
-            return;
-        }
-    } else {
-        const today = new Date();
-        filterDate = new Date(
-            today.getFullYear(),
-            today.getMonth(),
-            today.getDate()
+      const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+      if (dateRegex.test(dateParam)) {
+        const [year, month, day] = dateParam.split("-").map(Number);
+        filterDate = new Date(year, month - 1, day);
+      } else {
+        ws.send(
+          JSON.stringify({ error: "Invalid date format. Use YYYY-MM-DD." })
         );
+        ws.close();
+        return;
+      }
+    } else {
+      const today = new Date();
+      filterDate = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate()
+      );
     }
 
     // Send the initial data
@@ -100,19 +124,19 @@ wss.on("connection", async (ws, req) => {
 
     // Send the data if there is a new log entry
     const intervalId = setInterval(async () => {
-        let newData = await sendLogs(filterDate);
+      let newData = await sendLogs(filterDate);
 
-        if (JSON.stringify(newData) !== data) {
-            data = JSON.stringify(newData);
-            ws.send(data);
-        }
+      if (JSON.stringify(newData) !== data) {
+        data = JSON.stringify(newData);
+        ws.send(data);
+      }
     }, 1000);
 
     ws.on("close", () => {
-        console.log("WebSocket client disconnected from /logs");
-        clearInterval(intervalId);
+      console.log("WebSocket client disconnected from /logs");
+      clearInterval(intervalId);
     });
-} 
+  }
 
   if (req.url === "/count") {
     //send initial data
@@ -248,6 +272,171 @@ wss.on("connection", async (ws, req) => {
 
     ws.on("close", () => {
       console.log("WebSocket client disconnected from /receive");
+      clearInterval(intervalId);
+    });
+  }
+
+  if (req.url === "/oee") {
+    //send initial data
+    let data = await sendOEE();
+    data = JSON.stringify(data);
+    ws.send(data);
+
+    //send data if there is a new log entry
+
+    const intervalId = setInterval(async () => {
+      let newData = await sendOEE();
+
+      if (JSON.stringify(newData) !== data) {
+        data = JSON.stringify(newData);
+        ws.send(data);
+      }
+    }, 1000);
+
+    ws.on("close", () => {
+      console.log("WebSocket client disconnected from /oee");
+      clearInterval(intervalId);
+    });
+  }
+
+  if (req.url === "/output") {
+    //send initial data
+    let data = await sendOutput();
+    data = JSON.stringify(data);
+    ws.send(data);
+
+    //send data if there is a new log entry
+
+    const intervalId = setInterval(async () => {
+      let newData = await sendOutput();
+
+      if (JSON.stringify(newData) !== data) {
+        data = JSON.stringify(newData);
+        ws.send(data);
+      }
+    }, 1000);
+
+    ws.on("close", () => {
+      console.log("WebSocket client disconnected from /oee");
+      clearInterval(intervalId);
+    });
+  }
+
+  if (req.url === "/process") {
+    //send initial data
+    let data = await sendProcess();
+    data = JSON.stringify(data);
+    ws.send(data);
+
+    //send data if there is a new log entry
+
+    const intervalId = setInterval(async () => {
+      let newData = await sendProcess();
+
+      if (JSON.stringify(newData) !== data) {
+        data = JSON.stringify(newData);
+        ws.send(data);
+      }
+    }, 1000);
+
+    ws.on("close", () => {
+      console.log("WebSocket client disconnected from /process");
+      clearInterval(intervalId);
+    });
+  }
+
+  if (req.url.startsWith("/downtime-logs")) {
+    const url = new URL(req.url, `http://${req.headers.host}`);
+    const dateParam = url.searchParams.get("date");
+    let filterDate = null;
+
+    if (dateParam) {
+      const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+      if (dateRegex.test(dateParam)) {
+        const [year, month, day] = dateParam.split("-").map(Number);
+        filterDate = new Date(year, month - 1, day);
+      } else {
+        ws.send(
+          JSON.stringify({ error: "Invalid date format. Use YYYY-MM-DD." })
+        );
+        ws.close();
+        return;
+      }
+    } else {
+      const today = new Date();
+      filterDate = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate()
+      );
+    }
+
+    // Send the initial data
+    let data = await sendDowntimeLogs(filterDate);
+
+    data = JSON.stringify(data);
+    ws.send(data);
+
+    // Send the data if there is a new log entry
+    const intervalId = setInterval(async () => {
+      let newData = await sendDowntimeLogs(filterDate);
+
+      if (JSON.stringify(newData) !== data) {
+        data = JSON.stringify(newData);
+        ws.send(data);
+      }
+    }, 1000);
+
+    ws.on("close", () => {
+      console.log("WebSocket client disconnected from /downtime-logs");
+      clearInterval(intervalId);
+    });
+  }
+
+  if (req.url.startsWith("/downtime-chart")) {
+    const url = new URL(req.url, `http://${req.headers.host}`);
+    const dateParam = url.searchParams.get("date");
+    let filterDate = null;
+
+    if (dateParam) {
+      const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+      if (dateRegex.test(dateParam)) {
+        const [year, month, day] = dateParam.split("-").map(Number);
+        filterDate = new Date(year, month - 1, day);
+      } else {
+        ws.send(
+          JSON.stringify({ error: "Invalid date format. Use YYYY-MM-DD." })
+        );
+        ws.close();
+        return;
+      }
+    } else {
+      const today = new Date();
+      filterDate = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate()
+      );
+    }
+
+    // Send the initial data
+    let data = await sendDowntimeChart(filterDate);
+
+    data = JSON.stringify(data);
+    ws.send(data);
+
+    // Send the data if there is a new log entry
+    const intervalId = setInterval(async () => {
+      let newData = await sendDowntimeChart(filterDate);
+
+      if (JSON.stringify(newData) !== data) {
+        data = JSON.stringify(newData);
+        ws.send(data);
+      }
+    }, 1000);
+
+    ws.on("close", () => {
+      console.log("WebSocket client disconnected from /downtime-logs");
       clearInterval(intervalId);
     });
   }
