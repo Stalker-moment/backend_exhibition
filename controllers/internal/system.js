@@ -113,6 +113,13 @@ router.get("/sensor/:current/:pressure", async (req, res) => {
       },
     });
 
+    const sensorLog = await prisma.sensorLog.create({
+      data: {
+        Current: current,
+        Pressure: pressure,
+      },
+    });
+
     return res.status(200).json({
       message: "Data sensor updated successfully",
       sensor,

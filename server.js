@@ -33,6 +33,7 @@ const sendDowntimeLogs = require("./functions/sendDowntimeLogs");
 const sendDowntimeChart = require("./functions/sendDowntimeChart");
 const sendLamp = require("./functions/sendLamp");
 const sendSensor = require("./functions/sendSensor");
+const sendSensorChart = require("./functions/sendSensorChart");
 
 //-----------------Configuration------------------//
 app.use(bodyParser.json());
@@ -86,6 +87,7 @@ wss.on("connection", async (ws, req) => {
     "/downtime-chart",
     "/lamp",
     "/sensor",
+    "/sensor-chart"
   ];
 
   if (!requestArray.some((endpoint) => req.url.startsWith(endpoint))) {
@@ -487,6 +489,28 @@ wss.on("connection", async (ws, req) => {
   
     ws.on("close", () => {
       console.log("WebSocket client disconnected from /sensor");
+      clearInterval(intervalId);
+    });
+  }
+
+  if (req.url === "/sensor-chart") {
+    //send initial data
+    let data = await sendSensorChart();
+    data = JSON.stringify(data);
+    ws.send(data);
+  
+    //send data if there is a new log entry
+    const intervalId = setInterval(async () => {
+      let newData = await sendSensorChart();
+  
+      if (JSON.stringify(newData) !== data) {
+        data = JSON.stringify(newData);
+        ws.send(data);
+      }
+    }, 1000);
+  
+    ws.on("close", () => {
+      console.log("WebSocket client disconnected from /sensor-chart");
       clearInterval(intervalId);
     });
   }
