@@ -69,11 +69,21 @@ router.get(
         dataPlc,
       });
     } catch (error) {
-      console.error('Error in Prisma operation:', error);
+      console.error("Error in Prisma operation:", error);
       return res.status(500).json({ error: "Internal server error" });
     }
   }
 );
+
+router.get("/get/sensor", async (req, res) => {
+  try {
+    const sensor = await prisma.sensor.findFirst();
+    return res.status(200).json({ sensor });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
 
 router.get("/sensor/:current/:pressure", async (req, res) => {
   let current = parseFloat(req.params.current);
