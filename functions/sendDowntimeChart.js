@@ -49,7 +49,7 @@ async function sendDowntimeChart(filterDate = null) {
       dates.push(date);
     }
 
-    // Initialize the data array
+    // Initialize the data arrays
     const data = dates.map(() => 0);
     const dataMinutes = dates.map(() => 0); // Integer format for minutes
 
@@ -65,11 +65,22 @@ async function sendDowntimeChart(filterDate = null) {
       }
     });
 
+    // Convert downtime to HH:MM:SS format
+    const convertToTimeFormat = (totalMinutes) => {
+      let totalSeconds = totalMinutes * 60;
+      let hours = Math.floor(totalSeconds / 3600);
+      let minutes = Math.floor((totalSeconds % 3600) / 60);
+      let seconds = Math.floor(totalSeconds % 60);
+      return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    };
+
+    const formattedData = data.map(minutes => convertToTimeFormat(minutes));
+
     // Return the result in the desired format
     return {
       date: dates,
-      data: data.map(minutes => minutes.toFixed(1)), // Format data as string with one decimal place
-      dataMinutes: dataMinutes
+      data: formattedData, // String format: HH:MM:SS
+      dataMinutes: dataMinutes // Integer format for minutes
     };
 
   } catch (error) {
