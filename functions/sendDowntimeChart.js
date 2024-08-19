@@ -4,7 +4,7 @@ const prisma = new PrismaClient();
 /**
  * Fetch logs filtered by a specific month or return all logs for the month.
  * @param {Date|null} filterDate - The date to filter logs by. If null, fetch logs for the current month.
- * @returns {Promise<Object>} - A promise that resolves to an object with date and data arrays.
+ * @returns {Promise<Object>} - A promise that resolves to an object with date, data (string format), and dataHours (integer format) arrays.
  */
 async function sendDowntimeChart(filterDate = null) {
   try {
@@ -35,24 +35,28 @@ async function sendDowntimeChart(filterDate = null) {
       }
     });
 
-    // Collect all dates of the month
-    let dates = [];
-    let currentDate = new Date(startOfMonth);
+    // Collect unique dates
+    let dateSet = new Set();
+    downTime.forEach((item) => {
+      const date = item.timeStart.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+      dateSet.add(date);
+    });
 
-    while (currentDate <= endOfMonth) {
-      dates.push(currentDate.toISOString().split('T')[0]); // Format: YYYY-MM-DD
-      currentDate.setDate(currentDate.getDate() + 1);
-    }
+    // Prepare the date array
+    const dates = Array.from(dateSet).sort();
 
-    // Initialize the data array with zeros for each date
-    const data = new Array(dates.length).fill(0);
+    // Initialize the data array
+    const data = dates.map(date => 0);
+    const dataHours = dates.map(() => 0); // Integer format
 
     // Sum timeDown for each date
     downTime.forEach((item) => {
       const date = item.timeStart.toISOString().split('T')[0]; // Format: YYYY-MM-DD
       const index = dates.indexOf(date);
       if (index !== -1) {
-        data[index] += item.timeDown;
+        const timeDown = item.timeDown;
+        data[index] += timeDown;
+        dataHours[index] += Math.floor(timeDown / 3600000); // Convert to hours
       }
     });
 
@@ -67,7 +71,8 @@ async function sendDowntimeChart(filterDate = null) {
     // Return the result in the desired format
     return {
       date: dates,
-      data: formattedData
+      data: formattedData,
+      dataHours: dataHours
     };
 
   } catch (error) {
