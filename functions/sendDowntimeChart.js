@@ -35,18 +35,17 @@ async function sendDowntimeChart(filterDate = null) {
       }
     });
 
-    // Collect unique dates
-    let dateSet = new Set();
-    downTime.forEach((item) => {
-      const date = item.timeStart.toISOString().split('T')[0]; // Format: YYYY-MM-DD
-      dateSet.add(date);
-    });
+    // Collect all dates of the month
+    let dates = [];
+    let currentDate = new Date(startOfMonth);
 
-    // Prepare the date array
-    const dates = Array.from(dateSet).sort();
+    while (currentDate <= endOfMonth) {
+      dates.push(currentDate.toISOString().split('T')[0]); // Format: YYYY-MM-DD
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
 
-    // Initialize the data array
-    const data = dates.map(date => 0);
+    // Initialize the data array with zeros for each date
+    const data = new Array(dates.length).fill(0);
 
     // Sum timeDown for each date
     downTime.forEach((item) => {
