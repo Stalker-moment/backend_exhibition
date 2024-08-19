@@ -4,7 +4,7 @@ const prisma = new PrismaClient();
 /**
  * Fetch logs filtered by a specific month or return all logs for the month.
  * @param {Date|null} filterDate - The date to filter logs by. If null, fetch logs for the current month.
- * @returns {Promise<Object>} - A promise that resolves to an object with date, data (string format), and dataHours (integer format) arrays.
+ * @returns {Promise<Object>} - A promise that resolves to an object with date, data (string format), and dataMinutes (integer format) arrays.
  */
 async function sendDowntimeChart(filterDate = null) {
   try {
@@ -42,12 +42,16 @@ async function sendDowntimeChart(filterDate = null) {
       dateSet.add(date);
     });
 
-    // Prepare the date array
-    const dates = Array.from(dateSet).sort();
+    // Prepare the date array for the entire month
+    const dates = [];
+    for (let day = 1; day <= new Date(startOfMonth.getFullYear(), startOfMonth.getMonth() + 1, 0).getDate(); day++) {
+      const date = `${startOfMonth.getFullYear()}-${String(startOfMonth.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      dates.push(date);
+    }
 
     // Initialize the data array
-    const data = dates.map(date => 0);
-    const dataHours = dates.map(() => 0); // Integer format
+    const data = dates.map(() => 0);
+    const dataMinutes = dates.map(() => 0); // Integer format for minutes
 
     // Sum timeDown for each date
     downTime.forEach((item) => {
@@ -55,24 +59,17 @@ async function sendDowntimeChart(filterDate = null) {
       const index = dates.indexOf(date);
       if (index !== -1) {
         const timeDown = item.timeDown;
-        data[index] += timeDown;
-        dataHours[index] += Math.floor(timeDown / 3600000); // Convert to hours
+        const minutes = Math.round(timeDown / 60000 * 2) / 2; // Convert to minutes, round to nearest 0.5 minutes
+        data[index] += minutes;
+        dataMinutes[index] += Math.floor(timeDown / 60000); // Convert to full minutes
       }
-    });
-
-    // Convert total downtime to hours, minutes, and seconds for each day
-    const formattedData = data.map((time) => {
-      let hours = Math.floor(time / 3600000);
-      let minutes = Math.floor((time % 3600000) / 60000);
-      let seconds = Math.floor((time % 60000) / 1000);
-      return `${hours}:${minutes}:${seconds}`;
     });
 
     // Return the result in the desired format
     return {
       date: dates,
-      data: formattedData,
-      dataHours: dataHours
+      data: data.map(minutes => minutes.toFixed(1)), // Format data as string with one decimal place
+      dataMinutes: dataMinutes
     };
 
   } catch (error) {
