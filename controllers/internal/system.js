@@ -75,10 +75,10 @@ router.get(
   }
 );
 
-router.get("/get/sensor", async (req, res) => {
+router.get("/get/button", async (req, res) => {
   try {
-    const sensor = await prisma.sensor.findFirst();
-    return res.status(200).json({ sensor });
+    const configuration = await prisma.configuration.findFirst();
+    return res.status(200).json({ configuration });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Internal server error" });
