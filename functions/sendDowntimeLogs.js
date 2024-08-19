@@ -3,8 +3,9 @@ const prisma = new PrismaClient();
 
 /**
  * Fetch logs filtered by a specific date or return all logs.
+ * Convert timeStart into time and date fields.
  * @param {Date|null} filterDate - The date to filter logs by. If null, fetch logs for today.
- * @returns {Promise<Array>} - A promise that resolves to an array of logs.
+ * @returns {Promise<Array>} - A promise that resolves to an array of logs with formatted time and date.
  */
 
 async function sendDowntimeLogs(filterDate = null) {
@@ -49,6 +50,26 @@ async function sendDowntimeLogs(filterDate = null) {
         }
       });
     }
+
+    // Format the timeStart into time and date fields
+    downTime = downTime.map(log => {
+      const timeStart = new Date(log.timeStart);
+      const hours = timeStart.getHours().toString().padStart(2, '0');
+      const minutes = timeStart.getMinutes().toString().padStart(2, '0');
+      const seconds = timeStart.getSeconds().toString().padStart(2, '0');
+      const time = `${hours}:${minutes}:${seconds}`;
+
+      const day = timeStart.getDate().toString().padStart(2, '0');
+      const month = (timeStart.getMonth() + 1).toString().padStart(2, '0'); // Months are 0-based
+      const year = timeStart.getFullYear();
+      const date = `${day}:${month}:${year}`;
+
+      return {
+        ...log,
+        time,
+        date,
+      };
+    });
 
     return downTime;
   } catch (error) {

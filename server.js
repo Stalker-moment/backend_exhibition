@@ -31,6 +31,8 @@ const sendOutput = require("./functions/sendOutput");
 const sendProcess = require("./functions/sendProcess");
 const sendDowntimeLogs = require("./functions/sendDowntimeLogs");
 const sendDowntimeChart = require("./functions/sendDowntimeChart");
+const sendLamp = require("./functions/sendLamp");
+const sendSensor = require("./functions/sendSensor");
 
 //-----------------Configuration------------------//
 app.use(bodyParser.json());
@@ -82,6 +84,8 @@ wss.on("connection", async (ws, req) => {
     "/process",
     "/downtime-logs",
     "/downtime-chart",
+    "/lamp",
+    "/sensor",
   ];
 
   if (!requestArray.some((endpoint) => req.url.startsWith(endpoint))) {
@@ -253,7 +257,7 @@ wss.on("connection", async (ws, req) => {
     });
   }
 
-  if (req.url === "/receive") {
+  if (req.url === "/receive") { //for button watcher
     //send initial data
     let data = await sendCommand();
     data = JSON.stringify(data);
@@ -275,6 +279,30 @@ wss.on("connection", async (ws, req) => {
       clearInterval(intervalId);
     });
   }
+
+  if (req.url === "/lamp") { //for button watcher
+    //send initial data
+    let data = await sendLamp();
+    data = JSON.stringify(data);
+    ws.send(data);
+
+    //send data if there is a new log entry
+
+    const intervalId = setInterval(async () => {
+      let newData = await sendLamp();
+
+      if (JSON.stringify(newData) !== data) {
+        data = JSON.stringify(newData);
+        ws.send(data);
+      }
+    }, 1000);
+
+    ws.on("close", () => {
+      console.log("WebSocket client disconnected from /lamp");
+      clearInterval(intervalId);
+    });
+  }
+
 
   if (req.url === "/oee") {
     //send initial data
@@ -436,7 +464,29 @@ wss.on("connection", async (ws, req) => {
     }, 1000);
 
     ws.on("close", () => {
-      console.log("WebSocket client disconnected from /downtime-logs");
+      console.log("WebSocket client disconnected from /downtime-chart");
+      clearInterval(intervalId);
+    });
+  }
+
+  if (req.url === "/sensor") {
+    //send initial data
+    let data = await sendSensor();
+    data = JSON.stringify(data);
+    ws.send(data);
+  
+    //send data if there is a new log entry
+    const intervalId = setInterval(async () => {
+      let newData = await sendSensor();
+  
+      if (JSON.stringify(newData) !== data) {
+        data = JSON.stringify(newData);
+        ws.send(data);
+      }
+    }, 1000);
+  
+    ws.on("close", () => {
+      console.log("WebSocket client disconnected from /sensor");
       clearInterval(intervalId);
     });
   }

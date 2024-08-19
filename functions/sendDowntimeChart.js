@@ -4,13 +4,13 @@ const prisma = new PrismaClient();
 /**
  * Fetch logs filtered by a specific date or return all logs.
  * @param {Date|null} filterDate - The date to filter logs by. If null, fetch logs for today.
- * @returns {Promise<Array>} - A promise that resolves to an array of logs.
+ * @returns {Promise<Object>} - A promise that resolves to an object with LabelId, DownTime, DownTimeStr, totalDownTime, and totalDownTimeStr.
  */
 
 async function sendDowntimeChart(filterDate = null) {
   try {
     let downTime;
-    
+
     if (filterDate) {
       const startOfDay = new Date(filterDate);
       startOfDay.setHours(0, 0, 0, 0);
@@ -50,7 +50,7 @@ async function sendDowntimeChart(filterDate = null) {
       });
     }
 
-    //kumpulkan idNow yang ada (berbeda) di downTime
+    // Collect unique idNow values
     let idNow = [];
     downTime.forEach((item) => {
       if (!idNow.includes(item.idNow)) {
@@ -58,42 +58,48 @@ async function sendDowntimeChart(filterDate = null) {
       }
     });
 
-    //buat jumlahkan timeDown berdasarkan idNow
+    // Sum timeDown for each idNow
     let timeDown = [];
+    let totalDownTime = 0;
     idNow.forEach((id) => {
       let sum = 0;
       downTime.forEach((item) => {
         if (item.idNow == id) {
           sum += item.timeDown;
+          totalDownTime += item.timeDown; // Add to total downtime
         }
       });
       timeDown.push(sum);
     });
 
-    //convert timeDown ke format jam:menit:detik from milisecond
-    let timeDownFormat = [];
-    timeDown.forEach((time) => {
-        let hours = Math.floor(time / 3600000);
-        let minutes = Math.floor((time % 3600000) / 60000);
-        let seconds = Math.floor((time % 60000) / 1000);
-        let format = `${hours}:${minutes}:${seconds}`;
-
-        timeDownFormat.push(format);
+    // Convert timeDown to hh:mm:ss format
+    let timeDownFormat = timeDown.map((time) => {
+      let hours = Math.floor(time / 3600000);
+      let minutes = Math.floor((time % 3600000) / 60000);
+      let seconds = Math.floor((time % 60000) / 1000);
+      return `${hours}:${minutes}:${seconds}`;
     });
 
-    let result = [];
-    for (let i = 0; i < idNow.length; i++) {
-      result.push({
-        idNow: idNow[i],
-        timeDown: timeDownFormat[i]
-      });
-    }
+    // Convert totalDownTime to hh:mm:ss format
+    let totalDownTimeStr = (() => {
+      let hours = Math.floor(totalDownTime / 3600000);
+      let minutes = Math.floor((totalDownTime % 3600000) / 60000);
+      let seconds = Math.floor((totalDownTime % 60000) / 1000);
+      return `${hours}:${minutes}:${seconds}`;
+    })();
 
-    return result;
+    // Return the result in the desired format
+    return {
+      LabelId: idNow,
+      DownTime: timeDown,
+      DownTimeStr: timeDownFormat,
+      totalDownTime: totalDownTime,
+      totalDownTimeStr: totalDownTimeStr
+    };
 
   } catch (error) {
     console.error("Error fetching downTime:", error);
-    throw error; 
+    throw error;
   }
 }
 

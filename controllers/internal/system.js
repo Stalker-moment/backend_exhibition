@@ -4,12 +4,14 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 async function parseBoolean(value) {
-  if (value === "true") {
+  // Check if the value is a boolean true (1) or false (0)
+  if (value === "1" || value === "true") {
     return true;
-  } else if (value === "false") {
+  } else if (value === "0" || value === "false") {
     return false;
+  } else {
+    return null;
   }
-  return null;
 }
 
 router.get(
@@ -25,7 +27,6 @@ router.get(
     let MasterOn = await parseBoolean(req.params.MasterOn);
 
     if (
-      // Check if any of the values are null
       power === null ||
       DownTime === null ||
       air === null ||
@@ -39,11 +40,8 @@ router.get(
     }
 
     try {
-      //check value before update
-      const DataBefore = await prisma.dataPlc.findFirst();
-
       const dataPlc = await prisma.dataPlc.upsert({
-        where: { id: 1 }, // Using ID 1 for a single configuration scenario
+        where: { id: 1 },
         update: {
           Power: power,
           DownTime: DownTime,
@@ -71,13 +69,13 @@ router.get(
         dataPlc,
       });
     } catch (error) {
-      console.error(error);
+      console.error('Error in Prisma operation:', error);
       return res.status(500).json({ error: "Internal server error" });
     }
   }
 );
 
-router.get("/configuration/:current/:pressure", async (req, res) => {
+router.get("/sensor/:current/:pressure", async (req, res) => {
   let current = parseFloat(req.params.current);
   let pressure = parseFloat(req.params.pressure);
 
@@ -91,10 +89,10 @@ router.get("/configuration/:current/:pressure", async (req, res) => {
 
   try {
     //check value before update
-    const DataBefore = await prisma.configuration.findFirst();
+    const DataBefore = await prisma.sensor.findFirst();
 
-    const configuration = await prisma.configuration.upsert({
-      where: { id: 1 }, // Using ID 1 for a single configuration scenario
+    const sensor = await prisma.sensor.upsert({
+      where: { id: 1 }, // Using ID 1 for a single sensor scenario
       update: {
         Current: current,
         Pressure: pressure,
@@ -106,8 +104,8 @@ router.get("/configuration/:current/:pressure", async (req, res) => {
     });
 
     return res.status(200).json({
-      message: "Data configuration updated successfully",
-      configuration,
+      message: "Data sensor updated successfully",
+      sensor,
     });
   } catch (error) {
     console.error(error);
@@ -116,7 +114,7 @@ router.get("/configuration/:current/:pressure", async (req, res) => {
 });
 
 router.post("/switch/auto", async (req, res) => {
-  let value = req.body.value
+  let value = req.body.value;
 
   if (value === null) {
     return res.status(400).json({ error: "Invalid value" });
@@ -153,7 +151,7 @@ router.post("/switch/auto", async (req, res) => {
 });
 
 router.post("/switch/fault-reset", async (req, res) => {
-  let value = req.body.value
+  let value = req.body.value;
 
   if (value === null) {
     return res.status(400).json({ error: "Invalid value" });
@@ -190,7 +188,7 @@ router.post("/switch/fault-reset", async (req, res) => {
 });
 
 router.post("/switch/stop", async (req, res) => {
-  let value = req.body.value
+  let value = req.body.value;
 
   if (value === null) {
     return res.status(400).json({ error: "Invalid value" });
@@ -227,7 +225,7 @@ router.post("/switch/stop", async (req, res) => {
 });
 
 router.post("/switch/master-on", async (req, res) => {
-  let value = req.body.value
+  let value = req.body.value;
 
   if (value === null) {
     return res.status(400).json({ error: "Invalid value" });

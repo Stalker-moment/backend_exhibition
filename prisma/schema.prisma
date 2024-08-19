@@ -43,6 +43,7 @@ model Logs {
   description String?
 }
 
+
 model Configuration {
   id               Int      @id @default(autoincrement())
   AutoButton       Boolean
