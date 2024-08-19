@@ -2,99 +2,73 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 /**
- * Fetch logs filtered by a specific date or return all logs.
- * @param {Date|null} filterDate - The date to filter logs by. If null, fetch logs for today.
- * @returns {Promise<Object>} - A promise that resolves to an object with LabelId, DownTime, DownTimeStr, totalDownTime, and totalDownTimeStr.
+ * Fetch logs filtered by a specific month or return all logs for the month.
+ * @param {Date|null} filterDate - The date to filter logs by. If null, fetch logs for the current month.
+ * @returns {Promise<Object>} - A promise that resolves to an object with date and data arrays.
  */
-
 async function sendDowntimeChart(filterDate = null) {
   try {
     let downTime;
 
+    // Determine the start and end of the month based on the filterDate
+    let startOfMonth;
+    let endOfMonth;
+
     if (filterDate) {
-      const startOfDay = new Date(filterDate);
-      startOfDay.setHours(0, 0, 0, 0);
-
-      const endOfDay = new Date(filterDate);
-      endOfDay.setHours(23, 59, 59, 999);
-
-      downTime = await prisma.downTime.findMany({
-        where: {
-          timeStart: {
-            gte: startOfDay,
-            lte: endOfDay
-          }
-        },
-        orderBy: {
-          timeStart: 'desc'
-        }
-      });
+      startOfMonth = new Date(filterDate.getFullYear(), filterDate.getMonth(), 1);
+      endOfMonth = new Date(filterDate.getFullYear(), filterDate.getMonth() + 1, 0, 23, 59, 59, 999);
     } else {
       const today = new Date();
-      const startOfToday = new Date(today);
-      startOfToday.setHours(0, 0, 0, 0);
-
-      const endOfToday = new Date(today);
-      endOfToday.setHours(23, 59, 59, 999);
-
-      downTime = await prisma.downTime.findMany({
-        where: {
-          timeStart: {
-            gte: startOfToday,
-            lte: endOfToday
-          }
-        },
-        orderBy: {
-          timeStart: 'desc'
-        }
-      });
+      startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+      endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59, 999);
     }
 
-    // Collect unique idNow values
-    let idNow = [];
-    downTime.forEach((item) => {
-      if (!idNow.includes(item.idNow)) {
-        idNow.push(item.idNow);
+    downTime = await prisma.downTime.findMany({
+      where: {
+        timeStart: {
+          gte: startOfMonth,
+          lte: endOfMonth
+        }
+      },
+      orderBy: {
+        timeStart: 'desc'
       }
     });
 
-    // Sum timeDown for each idNow
-    let timeDown = [];
-    let totalDownTime = 0;
-    idNow.forEach((id) => {
-      let sum = 0;
-      downTime.forEach((item) => {
-        if (item.idNow == id) {
-          sum += item.timeDown;
-          totalDownTime += item.timeDown; // Add to total downtime
-        }
-      });
-      timeDown.push(sum);
+    // Collect unique dates
+    let dateSet = new Set();
+    downTime.forEach((item) => {
+      const date = item.timeStart.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+      dateSet.add(date);
     });
 
-    // Convert timeDown to hh:mm:ss format
-    let timeDownFormat = timeDown.map((time) => {
+    // Prepare the date array
+    const dates = Array.from(dateSet).sort();
+
+    // Initialize the data array
+    const data = dates.map(date => 0);
+
+    // Sum timeDown for each date
+    downTime.forEach((item) => {
+      const date = item.timeStart.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+      const index = dates.indexOf(date);
+      if (index !== -1) {
+        data[index] += item.timeDown;
+      }
+    });
+
+    // Convert total downtime to hours, minutes, and seconds for each day
+    const formattedData = data.map((time) => {
       let hours = Math.floor(time / 3600000);
       let minutes = Math.floor((time % 3600000) / 60000);
       let seconds = Math.floor((time % 60000) / 1000);
       return `${hours}:${minutes}:${seconds}`;
     });
 
-    // Convert totalDownTime to hh:mm:ss format
-    let totalDownTimeStr = (() => {
-      let hours = Math.floor(totalDownTime / 3600000);
-      let minutes = Math.floor((totalDownTime % 3600000) / 60000);
-      let seconds = Math.floor((totalDownTime % 60000) / 1000);
-      return `${hours}:${minutes}:${seconds}`;
-    })();
-
     // Return the result in the desired format
     return {
-      LabelId: idNow,
-      DownTime: timeDown,
-      DownTimeStr: timeDownFormat,
-      totalDownTime: totalDownTime,
-      totalDownTimeStr: totalDownTimeStr
+      date: dates,
+      data: formattedData
     };
 
   } catch (error) {
