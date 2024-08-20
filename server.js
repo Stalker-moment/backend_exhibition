@@ -34,6 +34,7 @@ const sendDowntimeChart = require("./functions/sendDowntimeChart");
 const sendLamp = require("./functions/sendLamp");
 const sendSensor = require("./functions/sendSensor");
 const sendSensorChart = require("./functions/sendSensorChart");
+const sendSensorLogs = require("./functions/sendSensorLogs");
 
 //-----------------Configuration------------------//
 app.use(bodyParser.json());
@@ -87,7 +88,8 @@ wss.on("connection", async (ws, req) => {
     "/downtime-chart",
     "/lamp",
     "/sensor",
-    "/sensor-chart"
+    "/sensor-chart",
+    "/sensor-logs",
   ];
 
   if (!requestArray.some((endpoint) => req.url.startsWith(endpoint))) {
@@ -506,6 +508,50 @@ wss.on("connection", async (ws, req) => {
       clearInterval(intervalId);
     });
   }
+
+  if (req.url.startsWith("/sensor-logs")) {
+    const url = new URL(req.url, `http://${req.headers.host}`);
+    const dateParam = url.searchParams.get("date");
+    let filterDate = null;
+  
+    if (dateParam) {
+      const dateRegex = /^\d{4}-\d{2}-\d{2}$/; // Updated regex for YYYY-MM-DD format
+      if (dateRegex.test(dateParam)) {
+        const [year, month, day] = dateParam.split("-").map(Number);
+        filterDate = new Date(year, month - 1, day); // Set the specific date
+      } else {
+        ws.send(
+          JSON.stringify({ error: "Invalid date format. Use YYYY-MM-DD." })
+        );
+        ws.close();
+        return;
+      }
+    } else {
+      const today = new Date();
+      filterDate = new Date(today.getFullYear(), today.getMonth(), today.getDate()); // Current date
+    }
+  
+    // Send the initial data
+    let data = await sendSensorLogs(filterDate);
+  
+    data = JSON.stringify(data);
+    ws.send(data);
+  
+    // Send the data if there is a new log entry
+    const intervalId = setInterval(async () => {
+      let newData = await sendSensorLogs(filterDate);
+  
+      if (JSON.stringify(newData) !== data) {
+        data = JSON.stringify(newData);
+        ws.send(data);
+      }
+    }, 1000);
+  
+    ws.on("close", () => {
+      console.log("WebSocket client disconnected from /downtime-chart");
+      clearInterval(intervalId);
+    });
+  }  
 });
 
 // Start the server
