@@ -45,6 +45,9 @@ router.post("/config/new", async (req, res) => {
         targetProduction: production || oeeConfig.targetProduction,
         targetCycleTimeOK: time || oeeConfig.targetCycleTimeOK,
         targetCycleTimeNG: time || oeeConfig.targetCycleTimeNG,
+        onDownTime: oeeConfig.onDownTime,
+        maxCurrent: oeeConfig.maxCurrent,
+        maxPressure: oeeConfig.maxPressure,
         idNow: Math.floor(100000 + Math.random() * 900000), // Membuat ID 6 digit baru
       },
       create: {
@@ -52,6 +55,9 @@ router.post("/config/new", async (req, res) => {
         targetProduction: production,
         targetCycleTimeOK: time,
         targetCycleTimeNG: time,
+        onDownTime: oeeConfig.onDownTime,
+        maxCurrent: oeeConfig.maxCurrent,
+        maxPressure: oeeConfig.maxPressure,
         idNow: Math.floor(100000 + Math.random() * 900000),
       },
     });
@@ -98,11 +104,21 @@ router.post("/config/sensor", async (req, res) => {
       where: { id: 1 }, // Menggunakan ID 1
       update: {
         id: 1,
+        idNow: oeeConfig.idNow,
+        targetProduction: oeeConfig.targetProduction,
+        targetCycleTimeOK: oeeConfig.targetCycleTimeOK,
+        targetCycleTimeNG: oeeConfig.targetCycleTimeNG,
+        onDownTime: oeeConfig.onDownTime,
         maxCurrent: current || oeeConfig.current,
         maxPressure: pressure || oeeConfig.pressure,
       },
       create: {
         id: 1,
+        idNow: oeeConfig.idNow,
+        targetProduction: oeeConfig.targetProduction,
+        targetCycleTimeOK: oeeConfig.targetCycleTimeOK,
+        targetCycleTimeNG: oeeConfig.targetCycleTimeNG,
+        onDownTime: oeeConfig.onDownTime,
         maxCurrent: current,
         maxPressure: pressure,
       },
