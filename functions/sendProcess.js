@@ -3,25 +3,37 @@ const prisma = new PrismaClient();
 
 async function sendProcess() {
   try {
-    //get IDNow
-    const DataBefore = await prisma.oeeConfig.findFirst();
-    const IDNOW = DataBefore.idNow;
-
-    // Fetch all logs by IDNow
-    let logs = await prisma.oeeProcess.findMany({
-      where: {
-        idNow: IDNOW,
-      },
+    // Ambil data IDNow terbaru dari oeeConfig
+    const dataBefore = await prisma.oeeConfig.findFirst({
+      orderBy: {
+        id: 'desc' // Mengambil data terbaru berdasarkan ID
+      }
     });
 
-    // Log the fetched logs to inspect their structure
+    if (!dataBefore) {
+      return { message: "No configuration found" };
+    }
+
+    const idNow = dataBefore.idNow;
+
+    // Ambil semua log berdasarkan IDNow terbaru
+    let logs = await prisma.oeeProcess.findMany({
+      where: {
+        idNow: idNow,
+      },
+      orderBy: {
+        startTime: 'desc' // Mengambil log terbaru berdasarkan waktu mulai
+      }
+    });
+
+    // Log hasil log yang diambil untuk memeriksa strukturnya
     console.log("Fetched logs:", logs);
 
     if (logs.length === 0) {
-      return { message: "No process found for today" };
+      return { message: "No process found for the given IDNow" };
     }
 
-    // Process each log entry and determine the status
+    // Proses setiap entri log dan tentukan status
     logs = logs.map((log) => {
       return {
         id: log.id,
@@ -31,7 +43,7 @@ async function sendProcess() {
         startTime: log.startTime,
         endTime: log.endTime,
         processTime: log.processTime,
-        status: determineStatus(log.isOK), // Determine the status based on isOK
+        status: determineStatus(log.isOK), // Tentukan status berdasarkan isOK
       };
     });
 
@@ -42,7 +54,7 @@ async function sendProcess() {
   }
 }
 
-// Helper function to determine status
+// Fungsi pembantu untuk menentukan status
 function determineStatus(isOK) {
   if (isOK === true) {
     return "L40";
