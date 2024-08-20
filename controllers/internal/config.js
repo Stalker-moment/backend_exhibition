@@ -28,42 +28,29 @@ router.post("/config/new", async (req, res) => {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
-    if (decoded.expired < Date.now()) {
+    if (decoded.exp < Date.now()) {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
-    // Dapatkan data oeeConfig dengan id = 1
-    let oeeConfig = await prisma.oeeConfig.findUnique({
-      where: { id: 1 },
+    // Mendapatkan data terakhir dari oeeConfig
+    let oeeConfig = await prisma.oeeConfig.findFirst({
+      where: { id: 1 } // Mengambil data dengan ID 1
     });
 
-    if (!oeeConfig) {
-      return res.status(404).json({ error: "Config not found" });
-    }
-
-    // Perbarui targetProduction jika diberikan
-    if (production) {
-      oeeConfig.targetProduction = production;
-    }
-
-    // Perbarui targetCycleTimeOK dan targetCycleTimeNG jika diberikan
-    if (time) {
-      oeeConfig.targetCycleTimeOK = time;
-      oeeConfig.targetCycleTimeNG = time;
-    }
-
-    // Buat idNow baru
-    let idNow = Math.floor(100000 + Math.random() * 900000);
-    oeeConfig.idNow = idNow;
-
-    // Update data oeeConfig
-    await prisma.oeeConfig.update({
-      where: { id: 1 },
-      data: {
-        idNow: oeeConfig.idNow,
-        targetProduction: oeeConfig.targetProduction,
-        targetCycleTimeOK: oeeConfig.targetCycleTimeOK,
-        targetCycleTimeNG: oeeConfig.targetCycleTimeNG,
+    // Menggunakan upsert untuk memperbarui atau membuat entri baru
+    oeeConfig = await prisma.oeeConfig.upsert({
+      where: { id: 1 }, // Menggunakan ID 1
+      update: {
+        targetProduction: production || oeeConfig.targetProduction,
+        targetCycleTimeOK: time || oeeConfig.targetCycleTimeOK,
+        targetCycleTimeNG: time || oeeConfig.targetCycleTimeNG,
+        idNow: Math.floor(100000 + Math.random() * 900000), // Membuat ID 6 digit baru
+      },
+      create: {
+        targetProduction: production,
+        targetCycleTimeOK: time,
+        targetCycleTimeNG: time,
+        idNow: Math.floor(100000 + Math.random() * 900000),
       },
     });
 
@@ -95,35 +82,25 @@ router.post("/config/sensor", async (req, res) => {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
-    if (decoded.expired < Date.now()) {
+    if (decoded.exp < Date.now()) {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
-    // Dapatkan data oeeConfig dengan id = 1
-    let oeeConfig = await prisma.oeeConfig.findUnique({
-      where: { id: 1 },
+    // Mendapatkan data terakhir dari oeeConfig
+    let oeeConfig = await prisma.oeeConfig.findFirst({
+      where: { id: 1 } // Mengambil data dengan ID 1
     });
 
-    if (!oeeConfig) {
-      return res.status(404).json({ error: "Config not found" });
-    }
-
-    // Perbarui current jika diberikan
-    if (current) {
-      oeeConfig.current = current;
-    }
-
-    // Perbarui pressure jika diberikan
-    if (pressure) {
-      oeeConfig.pressure = pressure;
-    }
-
-    // Update data oeeConfig
-    await prisma.oeeConfig.update({
-      where: { id: 1 },
-      data: {
-        current: oeeConfig.current,
-        pressure: oeeConfig.pressure,
+    // Menggunakan upsert untuk memperbarui atau membuat entri baru
+    oeeConfig = await prisma.oeeConfig.upsert({
+      where: { id: 1 }, // Menggunakan ID 1
+      update: {
+        current: current || oeeConfig.current,
+        pressure: pressure || oeeConfig.pressure,
+      },
+      create: {
+        current: current,
+        pressure: pressure,
       },
     });
 
