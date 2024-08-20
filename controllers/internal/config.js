@@ -12,7 +12,7 @@ router.post("/config/new", async (req, res) => {
   const time = parseInt(req.body.time);
   const { authorization } = req.headers;
 
-  if(!production || !time){
+  if (!production || !time) {
     return res.status(400).json({ error: "Bad Request" });
   }
 
@@ -32,36 +32,38 @@ router.post("/config/new", async (req, res) => {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
-    //get last data oeeConfig
-    let oeeConfig = await prisma.oeeConfig.findFirst({
-      orderBy: {
-        id: 1,
-      },
+    // Dapatkan data oeeConfig dengan id = 1
+    let oeeConfig = await prisma.oeeConfig.findUnique({
+      where: { id: 1 },
     });
 
-    //if production/time kosong maka isi value terakhir database, jika berisi maka di perbarui valuenya
+    if (!oeeConfig) {
+      return res.status(404).json({ error: "Config not found" });
+    }
+
+    // Perbarui targetProduction jika diberikan
     if (production) {
       oeeConfig.targetProduction = production;
     }
 
+    // Perbarui targetCycleTimeOK dan targetCycleTimeNG jika diberikan
     if (time) {
       oeeConfig.targetCycleTimeOK = time;
       oeeConfig.targetCycleTimeNG = time;
     }
 
-    //create 6 digit id random :
+    // Buat idNow baru
     let idNow = Math.floor(100000 + Math.random() * 900000);
     oeeConfig.idNow = idNow;
 
-    //update oeeConfig
+    // Update data oeeConfig
     await prisma.oeeConfig.update({
-      where: {
-        id: oeeConfig.id,
-      },
+      where: { id: 1 },
       data: {
         idNow: oeeConfig.idNow,
-        production: oeeConfig.production,
-        time: oeeConfig.time,
+        targetProduction: oeeConfig.targetProduction,
+        targetCycleTimeOK: oeeConfig.targetCycleTimeOK,
+        targetCycleTimeNG: oeeConfig.targetCycleTimeNG,
       },
     });
 
@@ -77,7 +79,7 @@ router.post("/config/sensor", async (req, res) => {
   const current = parseFloat(req.body.current);
   const pressure = parseFloat(req.body.pressure);
 
-  if(!current || !pressure){
+  if (!current || !pressure) {
     return res.status(400).json({ error: "Bad Request" });
   }
 
@@ -97,34 +99,28 @@ router.post("/config/sensor", async (req, res) => {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
-    //get all account include contact
-    let accounts = await prisma.account.findMany({
-      include: {
-        contact: true,
-      },
+    // Dapatkan data oeeConfig dengan id = 1
+    let oeeConfig = await prisma.oeeConfig.findUnique({
+      where: { id: 1 },
     });
 
-    //get last data oeeConfig
-    let oeeConfig = await prisma.oeeConfig.findFirst({
-      orderBy: {
-        id: 1,
-      },
-    });
+    if (!oeeConfig) {
+      return res.status(404).json({ error: "Config not found" });
+    }
 
-    //if current/pressure kosong maka isi value terakhir database, jika berisi maka di perbarui valuenya
+    // Perbarui current jika diberikan
     if (current) {
       oeeConfig.current = current;
     }
 
+    // Perbarui pressure jika diberikan
     if (pressure) {
       oeeConfig.pressure = pressure;
     }
 
-    //update oeeConfig
+    // Update data oeeConfig
     await prisma.oeeConfig.update({
-      where: {
-        id: oeeConfig.id,
-      },
+      where: { id: 1 },
       data: {
         current: oeeConfig.current,
         pressure: oeeConfig.pressure,
@@ -137,6 +133,5 @@ router.post("/config/sensor", async (req, res) => {
     return res.status(500).json({ error: "Internal Server Error" });
   }
 });
-
 
 module.exports = router;
