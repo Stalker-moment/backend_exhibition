@@ -11,6 +11,10 @@ router.post("/config/new", async (req, res) => {
   const { production, time } = req.body;
   const { authorization } = req.headers;
 
+  if(!production || !time){
+    return res.status(400).json({ error: "Bad Request" });
+  }
+
   try {
     if (!authorization) {
       return res.status(401).json({ error: "Unauthorized" });
@@ -69,6 +73,10 @@ router.post("/config/new", async (req, res) => {
 router.post("/config/sensor", async (req, res) => {
   const { authorization } = req.headers;
   const { current, pressure } = req.body;
+
+  if(!current || !pressure){
+    return res.status(400).json({ error: "Bad Request" });
+  }
 
   try {
     if (!authorization) {
