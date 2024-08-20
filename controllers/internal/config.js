@@ -30,7 +30,7 @@ router.post("/config/new", async (req, res) => {
     //get last data oeeConfig
     let oeeConfig = await prisma.oeeConfig.findFirst({
       orderBy: {
-        id: "1",
+        id: 1,
       },
     });
 
@@ -96,7 +96,7 @@ router.post("/config/sensor", async (req, res) => {
     //get last data oeeConfig
     let oeeConfig = await prisma.oeeConfig.findFirst({
       orderBy: {
-        id: "1",
+        id: 1,
       },
     });
 
