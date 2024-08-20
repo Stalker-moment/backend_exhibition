@@ -2,54 +2,40 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 /**
- * Fetch logs filtered by a specific date or return all logs.
+ * Fetch logs filtered by a specific month or return all logs for the current month.
  * Convert timeStart into time and date fields.
- * @param {Date|null} filterDate - The date to filter logs by. If null, fetch logs for today.
+ * @param {string|null} filterMonth - The month to filter logs by in 'YYYY-MM' format. If null, fetch logs for the current month.
  * @returns {Promise<Array>} - A promise that resolves to an array of logs with formatted time and date.
  */
-
-async function sendDowntimeLogs(filterDate = null) {
+async function sendDowntimeLogs(filterMonth = null) {
   try {
     let downTime;
-    
-    if (filterDate) {
-      const startOfDay = new Date(filterDate);
-      startOfDay.setHours(0, 0, 0, 0);
 
-      const endOfDay = new Date(filterDate);
-      endOfDay.setHours(23, 59, 59, 999);
+    // Determine the start and end of the month based on the filterMonth
+    let startOfMonth;
+    let endOfMonth;
 
-      downTime = await prisma.downTime.findMany({
-        where: {
-          timeStart: {
-            gte: startOfDay,
-            lte: endOfDay
-          }
-        },
-        orderBy: {
-          timeStart: 'desc'
-        }
-      });
+    if (filterMonth) {
+      const [year, month] = filterMonth.split('-').map(Number);
+      startOfMonth = new Date(year, month - 1, 1);
+      endOfMonth = new Date(year, month, 0, 23, 59, 59, 999);
     } else {
       const today = new Date();
-      const startOfToday = new Date(today);
-      startOfToday.setHours(0, 0, 0, 0);
-
-      const endOfToday = new Date(today);
-      endOfToday.setHours(23, 59, 59, 999);
-
-      downTime = await prisma.downTime.findMany({
-        where: {
-          timeStart: {
-            gte: startOfToday,
-            lte: endOfToday
-          }
-        },
-        orderBy: {
-          timeStart: 'desc'
-        }
-      });
+      startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+      endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59, 999);
     }
+
+    downTime = await prisma.downTime.findMany({
+      where: {
+        timeStart: {
+          gte: startOfMonth,
+          lte: endOfMonth
+        }
+      },
+      orderBy: {
+        timeStart: 'desc'
+      }
+    });
 
     // Format the timeStart into time and date fields
     downTime = downTime.map(log => {
