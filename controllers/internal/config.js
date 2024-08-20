@@ -43,12 +43,17 @@ router.post("/config/new", async (req, res) => {
       oeeConfig.time = time;
     }
 
+    //create 6 digit id random :
+    let idNow = Math.floor(100000 + Math.random() * 900000);
+    oeeConfig.idNow = idNow;
+
     //update oeeConfig
     await prisma.oeeConfig.update({
       where: {
         id: oeeConfig.id,
       },
       data: {
+        idNow: oeeConfig.idNow,
         production: oeeConfig.production,
         time: oeeConfig.time,
       },
