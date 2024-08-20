@@ -8,7 +8,8 @@ const dotenv = require("dotenv");
 dotenv.config();
 
 router.post("/config/new", async (req, res) => {
-  const { production, time } = req.body;
+  const production = parseInt(req.body.production);
+  const time = parseInt(req.body.time);
   const { authorization } = req.headers;
 
   if(!production || !time){
@@ -73,7 +74,8 @@ router.post("/config/new", async (req, res) => {
 
 router.post("/config/sensor", async (req, res) => {
   const { authorization } = req.headers;
-  const { current, pressure } = parseFloat(req.body);
+  const current = parseFloat(req.body.current);
+  const pressure = parseFloat(req.body.pressure);
 
   if(!current || !pressure){
     return res.status(400).json({ error: "Bad Request" });
