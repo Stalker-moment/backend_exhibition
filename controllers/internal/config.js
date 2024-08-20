@@ -41,12 +41,14 @@ router.post("/config/new", async (req, res) => {
     oeeConfig = await prisma.oeeConfig.upsert({
       where: { id: 1 }, // Menggunakan ID 1
       update: {
+        id: 1,
         targetProduction: production || oeeConfig.targetProduction,
         targetCycleTimeOK: time || oeeConfig.targetCycleTimeOK,
         targetCycleTimeNG: time || oeeConfig.targetCycleTimeNG,
         idNow: Math.floor(100000 + Math.random() * 900000), // Membuat ID 6 digit baru
       },
       create: {
+        id: 1,
         targetProduction: production,
         targetCycleTimeOK: time,
         targetCycleTimeNG: time,
@@ -95,10 +97,12 @@ router.post("/config/sensor", async (req, res) => {
     oeeConfig = await prisma.oeeConfig.upsert({
       where: { id: 1 }, // Menggunakan ID 1
       update: {
+        id: 1,
         maxCurrent: current || oeeConfig.current,
         maxPressure: pressure || oeeConfig.pressure,
       },
       create: {
+        id: 1,
         maxCurrent: current,
         maxPressure: pressure,
       },
