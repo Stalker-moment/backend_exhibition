@@ -40,11 +40,12 @@ router.post("/config/new", async (req, res) => {
 
     //if production/time kosong maka isi value terakhir database, jika berisi maka di perbarui valuenya
     if (production) {
-      oeeConfig.production = production;
+      oeeConfig.targetProduction = production;
     }
 
     if (time) {
-      oeeConfig.time = time;
+      oeeConfig.targetCycleTimeOK = time;
+      oeeConfig.targetCycleTimeNG = time;
     }
 
     //create 6 digit id random :
@@ -72,7 +73,7 @@ router.post("/config/new", async (req, res) => {
 
 router.post("/config/sensor", async (req, res) => {
   const { authorization } = req.headers;
-  const { current, pressure } = req.body;
+  const { current, pressure } = parseFloat(req.body);
 
   if(!current || !pressure){
     return res.status(400).json({ error: "Bad Request" });

@@ -83,7 +83,7 @@ model DataPlc {
 }
 
 model oeeConfig {
-  id                Int      @id //Integer ID custom for OEE/cycle
+  id                Int      @id //(Integer ID custom for OEE/cycle
   idNow             Int
   targetProduction  Int
   targetCycleTimeOK Int
