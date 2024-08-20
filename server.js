@@ -13,6 +13,7 @@ const app = express();
 const usersLogin = require("./controllers/users/login");
 const usersRegister = require("./controllers/users/register");
 const userEdit = require("./controllers/users/edit");
+const userAccount = require("./controllers/users/account");
 const InternalSystem = require("./controllers/internal/system");
 const internalOee = require("./controllers/internal/oee");
 const internalDownTime = require("./controllers/internal/downTime");
@@ -56,6 +57,7 @@ app.get("/", (req, res) => {
 app.use("/api/users", usersLogin);
 app.use("/api/users", usersRegister);
 app.use("/api/users", userEdit);
+app.use("/api/users", userAccount);
 app.use("/api/internal", InternalSystem);
 app.use("/api/internal", internalOee);
 app.use("/api/internal", internalDownTime);
