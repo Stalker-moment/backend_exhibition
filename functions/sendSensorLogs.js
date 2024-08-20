@@ -4,10 +4,10 @@ const prisma = new PrismaClient();
 /**
  * Fetch sensor logs filtered by a specific date or return all logs for the current day.
  * Convert timestamp into a string field in HH:MM:SS format.
+ * Add indexCurrent and indexPressure based on thresholds.
  * @param {String|null} filterDate - The date to filter logs by in YYYY-MM-DD format. If null, fetch logs for the current day.
- * @returns {Promise<Array>} - A promise that resolves to an array of logs with formatted time and sensor data.
+ * @returns {Promise<Array>} - A promise that resolves to an array of logs with formatted time, sensor data, and indexes.
  */
-
 async function sendSensorLogs(filterDate = null) {
   try {
     let sensorLogs;
@@ -48,7 +48,12 @@ async function sendSensorLogs(filterDate = null) {
       });
     }
 
-    // Format the timestamp into a time string in HH:MM:SS format
+    // Get maxCurrent and maxPressure from configuration
+    const getConfiguration = await prisma.oeeConfig.findFirst();
+    const maxCurrent = getConfiguration.maxCurrent;
+    const maxPressure = getConfiguration.maxPressure;
+
+    // Format the timestamp into a time string in HH:MM:SS format and calculate indexes
     sensorLogs = sensorLogs.map(log => {
       const timestamp = new Date(log.timestamp);
       const hours = timestamp.getHours().toString().padStart(2, '0');
@@ -56,11 +61,27 @@ async function sendSensorLogs(filterDate = null) {
       const seconds = timestamp.getSeconds().toString().padStart(2, '0');
       const formattedTime = `${hours}:${minutes}:${seconds}`;
 
+      let indexCurrent = "normal";
+      if (log.Current < maxCurrent - 2) {
+        indexCurrent = "low";
+      } else if (log.Current > maxCurrent) {
+        indexCurrent = "over";
+      }
+
+      let indexPressure = "normal";
+      if (log.Pressure < maxPressure - 2) {
+        indexPressure = "low";
+      } else if (log.Pressure > maxPressure) {
+        indexPressure = "over";
+      }
+
       return {
         id: log.id,
         timestamp: formattedTime,
         Current: log.Current,
+        indexCurrent: indexCurrent,
         Pressure: log.Pressure,
+        indexPressure: indexPressure,
       };
     });
 
