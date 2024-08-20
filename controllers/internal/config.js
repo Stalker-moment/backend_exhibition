@@ -95,12 +95,12 @@ router.post("/config/sensor", async (req, res) => {
     oeeConfig = await prisma.oeeConfig.upsert({
       where: { id: 1 }, // Menggunakan ID 1
       update: {
-        current: current || oeeConfig.current,
-        pressure: pressure || oeeConfig.pressure,
+        maxCurrent: current || oeeConfig.current,
+        maxPressure: pressure || oeeConfig.pressure,
       },
       create: {
-        current: current,
-        pressure: pressure,
+        maxCurrent: current,
+        maxPressure: pressure,
       },
     });
 
