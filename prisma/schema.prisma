@@ -89,8 +89,8 @@ model oeeConfig {
   targetCycleTimeOK Int
   targetCycleTimeNG Int
   onDownTime        Boolean
-  maxCurrent        Float
-  maxPressure       Float
+  maxCurrent        Float @default(5.0)
+  maxPressure       Float @default(4.0)
   updatedAt         DateTime @updatedAt
 }
 
