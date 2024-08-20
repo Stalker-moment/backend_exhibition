@@ -368,15 +368,15 @@ router.get("/switch/reverse/stop/:value", async (req, res) => {
     const configuration = await prisma.configuration.upsert({
       where: { id: 1 }, // Using ID 1 for a single configuration scenario
       update: {
-        AutoButton: value,
+        AutoButton: DataBefore.AutoButton,
         FaultResetButton: DataBefore.FaultResetButton,
-        StopButton: DataBefore.StopButton,
+        StopButton: value,
         MasterOnButton: DataBefore.MasterOnButton,
       },
       create: {
-        AutoButton: value,
+        AutoButton: DataBefore.AutoButton,
         FaultResetButton: DataBefore.FaultResetButton,
-        StopButton: DataBefore.StopButton,
+        StopButton: value,
         MasterOnButton: DataBefore.MasterOnButton,
       },
     });
