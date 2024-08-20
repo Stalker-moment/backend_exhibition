@@ -27,16 +27,18 @@ router.post("/account", async (req, res) => {
     }
 
     //get all account include contact
-    const accounts = await prisma.account.findMany({
+    let accounts = await prisma.account.findMany({
       include: {
         contact: true,
       },
     });
 
-    //json stringfy
-    const akun = JSON.stringify(accounts);
+    //delete password field
+    accounts.forEach((account) => {
+      delete account.password;
+    });
 
-    return res.status(200).json(akun);
+    return res.status(200).json(accounts);
   } catch (err) {
     console.log(err);
     return res.status(500).json({ error: "Internal Server Error" });
