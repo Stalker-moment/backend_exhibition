@@ -3,11 +3,11 @@ const prisma = new PrismaClient();
 
 /**
  * Fetch logs filtered by a specific month or return all logs for the current month.
- * Convert timeStart and timeEnd into string fields in HH:MM:SS format.
+ * Convert timeStart into separate date and time fields in MM/DD/YYYY and HH:MM:SS formats.
+ * Include timeEnd as a separate time field in HH:MM:SS format.
  * @param {String|null} filterMonth - The month to filter logs by in YYYY-MM format. If null, fetch logs for the current month.
  * @returns {Promise<Array>} - A promise that resolves to an array of logs with formatted time and date.
  */
-
 async function sendDowntimeLogs(filterMonth = null) {
   try {
     let downTime;
@@ -36,27 +36,37 @@ async function sendDowntimeLogs(filterMonth = null) {
       }
     });
 
-    // Format the timeStart and timeEnd into time strings in HH:MM:SS format
+    // Format the timeStart and timeEnd into separate date and time fields
     downTime = downTime.map(log => {
-      const timeStart = new Date(log.timeStart);
-      const startHours = timeStart.getHours().toString().padStart(2, '0');
-      const startMinutes = timeStart.getMinutes().toString().padStart(2, '0');
-      const startSeconds = timeStart.getSeconds().toString().padStart(2, '0');
-      const formattedTimeStart = `${startHours}:${startMinutes}:${startSeconds}`;
+      const formatDate = (date) => {
+        const day = date.getDate().toString().padStart(2, '0');
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        const year = date.getFullYear();
+        return `${month}/${day}/${year}`;
+      };
 
-      let formattedTimeEnd = null;
+      const formatTime = (date) => {
+        const hours = date.getHours().toString().padStart(2, '0');
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        const seconds = date.getSeconds().toString().padStart(2, '0');
+        return `${hours}:${minutes}:${seconds}`;
+      };
+
+      const timeStart = new Date(log.timeStart);
+      const dateStart = formatDate(timeStart);
+      const timeStartFormatted = formatTime(timeStart);
+
+      let timeEndFormatted = null;
       if (log.timeEnd) {
         const timeEnd = new Date(log.timeEnd);
-        const endHours = timeEnd.getHours().toString().padStart(2, '0');
-        const endMinutes = timeEnd.getMinutes().toString().padStart(2, '0');
-        const endSeconds = timeEnd.getSeconds().toString().padStart(2, '0');
-        formattedTimeEnd = `${endHours}:${endMinutes}:${endSeconds}`;
+        timeEndFormatted = formatTime(timeEnd);
       }
 
       return {
         idNow: log.idNow,
-        timeStart: formattedTimeStart,
-        timeEnd: formattedTimeEnd,
+        dateStart: dateStart,
+        timeStart: timeStartFormatted,
+        timeEnd: timeEndFormatted,
         timeDownStr: log.timeDownStr,
         description: log.description,
       };
