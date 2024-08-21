@@ -35,13 +35,6 @@ async function sendDowntimeChart(filterDate = null) {
       }
     });
 
-    // Collect unique dates
-    let dateSet = new Set();
-    downTime.forEach((item) => {
-      const date = item.timeStart.toISOString().split('T')[0]; // Format: YYYY-MM-DD
-      dateSet.add(date);
-    });
-
     // Prepare the date array for the entire month
     const dates = [];
     for (let day = 1; day <= new Date(startOfMonth.getFullYear(), startOfMonth.getMonth() + 1, 0).getDate(); day++) {
@@ -58,8 +51,8 @@ async function sendDowntimeChart(filterDate = null) {
       const index = dates.indexOf(date);
       if (index !== -1) {
         const timeDown = item.timeDown; // Assume timeDown is in milliseconds
-        const minutes = Math.round(timeDown / 60000 * 2) / 2; // Convert to minutes, round to nearest 0.5 minutes
-        dataMinutes[index] += Math.floor(timeDown / 60000); // Accumulate total downtime in minutes
+        const minutes = Math.floor(timeDown / 60000); // Convert to full minutes
+        dataMinutes[index] += minutes; // Accumulate total downtime in minutes
       }
     });
 
