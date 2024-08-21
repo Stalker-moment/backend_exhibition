@@ -35,26 +35,31 @@ async function sendDowntimeChart(filterDate = null) {
       }
     });
 
+    // Accumulate downtime for each date
+    const dateToMinutesMap = new Map();
+
+    downTime.forEach((item) => {
+      const date = item.timeStart.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+      const downtimeMillis = item.timeDown; // Assuming timeDown is in milliseconds
+      const minutes = Math.floor(downtimeMillis / 60000); // Convert to full minutes
+
+      if (dateToMinutesMap.has(date)) {
+        dateToMinutesMap.set(date, dateToMinutesMap.get(date) + minutes);
+      } else {
+        dateToMinutesMap.set(date, minutes);
+      }
+    });
+
     // Prepare the date array for the entire month
     const dates = [];
+    const dataMinutes = [];
     for (let day = 1; day <= new Date(startOfMonth.getFullYear(), startOfMonth.getMonth() + 1, 0).getDate(); day++) {
       const date = `${startOfMonth.getFullYear()}-${String(startOfMonth.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
       dates.push(date);
+
+      // Get accumulated minutes or default to 0 if no data
+      dataMinutes.push(dateToMinutesMap.get(date) || 0);
     }
-
-    // Initialize the data arrays
-    const dataMinutes = dates.map(() => 0); // Integer format for minutes
-
-    // Accumulate downtime for each date
-    downTime.forEach((item) => {
-      const date = item.timeStart.toISOString().split('T')[0]; // Format: YYYY-MM-DD
-      const index = dates.indexOf(date);
-      if (index !== -1) {
-        const timeDown = item.timeDown; // Assume timeDown is in milliseconds
-        const minutes = Math.floor(timeDown / 60000); // Convert to full minutes
-        dataMinutes[index] += minutes; // Accumulate total downtime in minutes
-      }
-    });
 
     // Convert downtime to HH:MM:SS format
     const convertToTimeFormat = (totalMinutes) => {
