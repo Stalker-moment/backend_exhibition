@@ -40,7 +40,7 @@ async function sendDowntimeChart(filterDate = null) {
 
     downTime.forEach((item) => {
       const date = item.timeStart.toISOString().split('T')[0]; // Format: YYYY-MM-DD
-      const downtimeMillis = item.timeDown; // Assuming timeDown is in milliseconds
+      const downtimeMillis = item.timeDown || 0; // Default to 0 if timeDown is null or undefined
       const minutes = Math.floor(downtimeMillis / 60000); // Convert to full minutes
 
       if (dateToMinutesMap.has(date)) {
