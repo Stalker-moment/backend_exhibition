@@ -50,18 +50,16 @@ async function sendDowntimeChart(filterDate = null) {
     }
 
     // Initialize the data arrays
-    const data = dates.map(() => 0);
     const dataMinutes = dates.map(() => 0); // Integer format for minutes
 
-    // Sum timeDown for each date
+    // Accumulate downtime for each date
     downTime.forEach((item) => {
       const date = item.timeStart.toISOString().split('T')[0]; // Format: YYYY-MM-DD
       const index = dates.indexOf(date);
       if (index !== -1) {
-        const timeDown = item.timeDown;
+        const timeDown = item.timeDown; // Assume timeDown is in milliseconds
         const minutes = Math.round(timeDown / 60000 * 2) / 2; // Convert to minutes, round to nearest 0.5 minutes
-        data[index] += minutes;
-        dataMinutes[index] += Math.floor(timeDown / 60000); // Convert to full minutes
+        dataMinutes[index] += Math.floor(timeDown / 60000); // Accumulate total downtime in minutes
       }
     });
 
@@ -74,7 +72,7 @@ async function sendDowntimeChart(filterDate = null) {
       return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
     };
 
-    const formattedData = data.map(minutes => convertToTimeFormat(minutes));
+    const formattedData = dataMinutes.map(minutes => convertToTimeFormat(minutes));
 
     // Return the result in the desired format
     return {
