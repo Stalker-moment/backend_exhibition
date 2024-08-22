@@ -15,6 +15,16 @@ async function sendLamp() {
       return { "message": "No found" };
     }
 
+    //reverse value boolean at database :
+    latestConfig.Power = !latestConfig.Power;
+    latestConfig.DownTime = !latestConfig.DownTime;
+    latestConfig.Air = !latestConfig.Air;
+    latestConfig.MachiningComp = !latestConfig.MachiningComp;
+    latestConfig.L40Parts = !latestConfig.L40Parts;
+    latestConfig.L30Parts = !latestConfig.L30Parts;
+    latestConfig.PLCRun = !latestConfig.PLCRun;
+    latestConfig.MasterOn = !latestConfig.MasterOn;
+
     latestConfig = {
       Power: latestConfig.Power,
       DownTime: latestConfig.DownTime,
