@@ -14,6 +14,11 @@ async function sendOEE() {
       },
     });
 
+    //filter data oeeProcess yang isOK nya null tidak dihitung
+    const oeeProcessFiltered = oeeProcess.filter((log) => {
+      return log.isOK !== null;
+    });
+
     //get all value with IDNow at DownTime
     const downTime = await prisma.downTime.findMany({
       where: {
@@ -25,12 +30,12 @@ async function sendOEE() {
     let OK = 0;
     let NG = 0;
 
-    const total = oeeProcess.length;
+    const total = oeeProcessFiltered.length;
 
-    for (let i = 0; i < oeeProcess.length; i++) {
-      if (oeeProcess[i].isOK === null) {
+    for (let i = 0; i < oeeProcessFiltered.length; i++) {
+      if (oeeProcessFiltered[i].isOK === null) {
         //do nothing
-      } else if (oeeProcess[i].isOK === true) {
+      } else if (oeeProcessFiltered[i].isOK === true) {
         OK++;
       } else {
         NG++;
@@ -43,8 +48,8 @@ async function sendOEE() {
     const idealTime = DataBefore.targetCycleTimeOK;
     let totalCycleTime = 0;
 
-    for (let i = 0; i < oeeProcess.length; i++) {
-      totalCycleTime += oeeProcess[i].processTime;
+    for (let i = 0; i < oeeProcessFiltered.length; i++) {
+      totalCycleTime += oeeProcessFiltered[i].processTime;
     }
 
     let performance = (idealTime * total) / totalCycleTime;

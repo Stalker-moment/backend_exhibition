@@ -14,13 +14,18 @@ async function sendOutput() {
       },
     });
 
+    //filter data oeeProcess yang isOK nya null tidak dihitung
+    const oeeProcessFiltered = oeeProcess.filter((log) => {
+      return log.isOK !== null;
+    });
+
     //hitung quality
     let OK = 0;
     let NG = 0;
 
 
     //get the last data from oeeProcess
-    const oeeProcessLast = oeeProcess[oeeProcess.length - 1];
+    const oeeProcessLast = oeeProcessFiltered[oeeProcessFiltered.length - 1];
 
     const target = oeeProcessLast.target;
     const total = oeeProcessLast.process;
@@ -28,10 +33,10 @@ async function sendOutput() {
     const open = target - total;
     let percent = (total / target) * 100
 
-    for (let i = 0; i < oeeProcess.length; i++) {
-      if (oeeProcess[i].isOK === null) {
+    for (let i = 0; i < oeeProcessFiltered.length; i++) {
+      if (oeeProcessFiltered[i].isOK === null) {
         //do nothing
-      } else if (oeeProcess[i].isOK === true) {
+      } else if (oeeProcessFiltered[i].isOK === true) {
         OK++;
       } else {
         NG++;
