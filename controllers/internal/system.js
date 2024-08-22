@@ -97,12 +97,14 @@ router.get("/sensor/:current/:pressure", async (req, res) => {
     return res.status(400).json({ error: "Invalid value" });
   }
 
+  const thresholds = 0.05;
+
   //if value current/pressure less than 0.02 make it 0.00
-  if (current < 0.02) {
+  if (current < thresholds) {
     current = 0.00;
   }
 
-  if (pressure < 0.02) {
+  if (pressure < thresholds) {
     pressure = 0.00;
   }
 
