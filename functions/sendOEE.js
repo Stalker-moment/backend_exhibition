@@ -112,6 +112,23 @@ async function sendOEE() {
       OEE = OEE.toFixed(2);
     }
 
+    //handle NaN to 0
+    if (isNaN(quality)) {
+      quality = 0;
+    }
+
+    if (isNaN(performance)) {
+      performance = 0;
+    }
+
+    if (isNaN(availability)) {
+      availability = 0;
+    }
+
+    if (isNaN(OEE)) {
+      OEE = 0;
+    }
+
     const unit = "%";
 
     const jsonOEE = {
