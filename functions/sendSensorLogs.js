@@ -27,7 +27,8 @@ async function sendSensorLogs(filterDate = null) {
         },
         orderBy: {
           timestamp: 'desc'
-        }
+        },
+        take: 15 // Take the last 15 logs
       });
     } else {
       // Default to the current day
@@ -44,7 +45,8 @@ async function sendSensorLogs(filterDate = null) {
         },
         orderBy: {
           timestamp: 'desc'
-        }
+        },
+        take: 15 // Take the last 15 logs
       });
     }
 
@@ -84,11 +86,6 @@ async function sendSensorLogs(filterDate = null) {
         indexPressure: indexPressure,
       };
     });
-
-    //filtering data (only 15 latest data)
-    if (sensorLogs.length > 15) {
-      sensorLogs = sensorLogs.slice(sensorLogs.length - 15);
-    }
 
     return sensorLogs;
   } catch (error) {
