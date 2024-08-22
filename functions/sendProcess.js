@@ -33,6 +33,14 @@ async function sendProcess() {
       return { message: "No process found for the given IDNow" };
     }
 
+    //if processTime before treshold maka jadikan waktu ke tresold
+    logs = logs.map((log) => {
+      if (log.processTime < 20) {
+        log.processTime = 20;
+      }
+      return log;
+    });
+
     // Proses setiap entri log dan tentukan status
     logs = logs.map((log) => {
       return {
