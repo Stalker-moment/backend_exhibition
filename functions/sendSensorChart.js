@@ -40,6 +40,13 @@ async function sendSensorChart() {
       data.Pressure.push(log.Pressure);
     });
 
+    //filtering data (only 15 latest data)
+    if (data.TimeChart.length > 15) {
+      data.TimeChart = data.TimeChart.slice(data.TimeChart.length - 15);
+      data.Current = data.Current.slice(data.Current.length - 15);
+      data.Pressure = data.Pressure.slice(data.Pressure.length - 15);
+    }
+
     return data;
 
   } catch (error) {
