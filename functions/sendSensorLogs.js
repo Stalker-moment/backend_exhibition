@@ -75,6 +75,11 @@ async function sendSensorLogs(filterDate = null) {
         indexPressure = "over";
       }
 
+      //filter only 15 latest data
+      if (sensorLogs.length > 15) {
+        sensorLogs = sensorLogs.slice(sensorLogs.length - 15);
+      }
+
       return {
         id: log.id,
         timestamp: formattedTime,
