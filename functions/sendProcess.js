@@ -11,7 +11,7 @@ async function sendProcess() {
     });
 
     if (!dataBefore) {
-      return { message: "No configuration found" };
+      return [];
     }
 
     const idNow = dataBefore.idNow;
