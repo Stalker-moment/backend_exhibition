@@ -36,47 +36,50 @@ async function sendDowntimeChart(filterDate = null) {
     });
 
     // Accumulate downtime for each date
-    const dateToMinutesMap = new Map();
+    const dateToSecondsMap = new Map();
 
     downTime.forEach((item) => {
       const date = item.timeStart.toISOString().split('T')[0]; // Format: YYYY-MM-DD
       const downtimeMillis = item.timeDown || 0; // Default to 0 if timeDown is null or undefined
-      const minutes = Math.floor(downtimeMillis / 60000); // Convert to full minutes
+      const seconds = Math.floor(downtimeMillis / 1000); // Convert to full seconds
 
-      if (dateToMinutesMap.has(date)) {
-        dateToMinutesMap.set(date, dateToMinutesMap.get(date) + minutes);
+      if (dateToSecondsMap.has(date)) {
+        dateToSecondsMap.set(date, dateToSecondsMap.get(date) + seconds);
       } else {
-        dateToMinutesMap.set(date, minutes);
+        dateToSecondsMap.set(date, seconds);
       }
     });
 
     // Prepare the date array for the entire month
     const dates = [];
     const dataMinutes = [];
+    const dataSeconds = [];
     for (let day = 1; day <= new Date(startOfMonth.getFullYear(), startOfMonth.getMonth() + 1, 0).getDate(); day++) {
       const date = `${startOfMonth.getFullYear()}-${String(startOfMonth.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
       dates.push(date);
 
-      // Get accumulated minutes or default to 0 if no data
-      dataMinutes.push(dateToMinutesMap.get(date) || 0);
+      // Get accumulated seconds or default to 0 if no data
+      const totalSeconds = dateToSecondsMap.get(date) || 0;
+      dataSeconds.push(totalSeconds);
+      dataMinutes.push(Math.floor(totalSeconds / 60));
     }
 
     // Convert downtime to HH:MM:SS format
-    const convertToTimeFormat = (totalMinutes) => {
-      let totalSeconds = totalMinutes * 60;
+    const convertToTimeFormat = (totalSeconds) => {
       let hours = Math.floor(totalSeconds / 3600);
       let minutes = Math.floor((totalSeconds % 3600) / 60);
       let seconds = Math.floor(totalSeconds % 60);
       return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
     };
 
-    const formattedData = dataMinutes.map(minutes => convertToTimeFormat(minutes));
+    const formattedData = dataSeconds.map(seconds => convertToTimeFormat(seconds));
 
     // Return the result in the desired format
     return {
       date: dates,
       data: formattedData, // String format: HH:MM:SS
-      dataMinutes: dataMinutes // Integer format for minutes
+      dataMinutes: dataMinutes, // Integer format for minutes
+      dataSeconds: dataSeconds  // Integer format for seconds
     };
 
   } catch (error) {
