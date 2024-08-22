@@ -64,14 +64,14 @@ async function sendSensorLogs(filterDate = null) {
       const formattedTime = `${hours}:${minutes}:${seconds}`;
 
       let indexCurrent = "normal";
-      if (log.Current < maxCurrent - 2) {
+      if (log.Current < maxCurrent - 1) {
         indexCurrent = "low";
       } else if (log.Current > maxCurrent) {
         indexCurrent = "over";
       }
 
       let indexPressure = "normal";
-      if (log.Pressure < maxPressure - 2) {
+      if (log.Pressure < maxPressure - 1) {
         indexPressure = "low";
       } else if (log.Pressure > maxPressure) {
         indexPressure = "over";

@@ -15,11 +15,32 @@ async function sendSensor() {
       return { message: "No found" };
     }
 
+    // Get maxCurrent and maxPressure from configuration
+    const getConfiguration = await prisma.oeeConfig.findFirst();
+    const maxCurrent = getConfiguration.maxCurrent;
+    const maxPressure = getConfiguration.maxPressure;
+
+    let indexCurrent = "normal";
+      if (log.Current < maxCurrent - 1) {
+        indexCurrent = "low";
+      } else if (log.Current > maxCurrent) {
+        indexCurrent = "over";
+      }
+
+      let indexPressure = "normal";
+      if (log.Pressure < maxPressure - 1) {
+        indexPressure = "low";
+      } else if (log.Pressure > maxPressure) {
+        indexPressure = "over";
+      }
+
     latestConfig = {
       Current: latestConfig.Current,
       UnitCurrent: "A",
       Pressure: latestConfig.Pressure,
       UnitPressure: "bar",
+      indexCurrent: indexCurrent,
+      indexPressure: indexPressure,
       updateAt: latestConfig.updateAt,
     };
 
