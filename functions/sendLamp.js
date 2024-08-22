@@ -32,7 +32,7 @@ async function sendLamp() {
       MachiningComp: latestConfig.MachiningComp,
       L40Parts: latestConfig.L40Parts,
       L30Parts: latestConfig.L30Parts,
-      PLCRun: latestConfig.PLCRun,
+      Running: latestConfig.PLCRun,
       MasterOn: latestConfig.MasterOn,
     };
 
