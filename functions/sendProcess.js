@@ -30,7 +30,7 @@ async function sendProcess() {
     console.log("Fetched logs:", logs);
 
     if (logs.length === 0) {
-      return { message: "No process found for the given IDNow" };
+      return [];
     }
 
     //if processTime before treshold maka jadikan waktu ke tresold
