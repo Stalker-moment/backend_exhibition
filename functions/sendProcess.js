@@ -35,8 +35,8 @@ async function sendProcess() {
 
     //if processTime before treshold maka jadikan waktu ke tresold
     logs = logs.map((log) => {
-      if (log.processTime < 20) {
-        log.processTime = 20;
+      if (log.processTime < 21) {
+        log.processTime = 21;
       }
       return log;
     });
