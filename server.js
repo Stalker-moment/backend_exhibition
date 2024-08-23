@@ -38,6 +38,7 @@ const sendSensor = require("./functions/sendSensor");
 const sendSensorChart = require("./functions/sendSensorChart");
 const sendSensorLogs = require("./functions/sendSensorLogs");
 const sendOnline = require("./functions/sendOnline");
+const sendConfig = require("./functions/sendConfig");
 
 //-----------------Configuration------------------//
 app.use(bodyParser.json());
@@ -573,6 +574,28 @@ wss.on("connection", async (ws, req) => {
     //send data if there is a new log entry
     const intervalId = setInterval(async () => {
       let newData = await sendOnline();
+
+      if (JSON.stringify(newData) !== data) {
+        data = JSON.stringify(newData);
+        ws.send(data);
+      }
+    }, 1000);
+
+    ws.on("close", () => {
+      console.log("WebSocket client disconnected from /online");
+      clearInterval(intervalId);
+    });
+  }
+
+  if (req.url === "/get-config") {
+    //send initial data
+    let data = await sendConfig();
+    data = JSON.stringify(data);
+    ws.send(data);
+
+    //send data if there is a new log entry
+    const intervalId = setInterval(async () => {
+      let newData = await sendConfig();
 
       if (JSON.stringify(newData) !== data) {
         data = JSON.stringify(newData);
