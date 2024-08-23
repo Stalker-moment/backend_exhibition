@@ -11,6 +11,7 @@ const prisma = new PrismaClient();
 async function sendDowntimeLogs(filterMonth = null) {
   try {
     let downTime;
+    let startOfMonth, endOfMonth;
 
     // Check if filterMonth is provided and is a string
     if (filterMonth && typeof filterMonth === 'string') {
