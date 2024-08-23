@@ -16,7 +16,7 @@ async function sendOnline() {
     }
 
     //get the last log (update time)
-    let lastLog = latestConfig.updatedAt;
+    let lastLog = latestConfig.updateAt;
 
     //get the current time
     let currentTime = new Date();
@@ -25,6 +25,7 @@ async function sendOnline() {
     let difference = currentTime - lastLog;
 
     //check if the difference is greater than 10 seconds
+    //console.log(difference);
     if (difference > 10000) {
       return { message: "Machine Offline" };
     } else {
