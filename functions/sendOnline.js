@@ -29,7 +29,7 @@ async function sendOnline() {
     if (difference > 10000) {
       return { isOnline: false, message: "Machine Offline" };
     } else {
-      return { isOnlineL:true, message: "Machine Online" };
+      return { isOnline:true, message: "Machine Online" };
     }
   } catch (error) {
     console.error("Error fetching latest log:", error);
