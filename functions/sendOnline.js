@@ -34,7 +34,7 @@ async function sendOnline() {
       },
     });
 
-    let timeDifferenceHHMMSS;
+    let timeDifferenceHHMMSS = "00:00:00";
 
     if (!downtimeData) {
       timeDifferenceHHMMSS = "00:00:00";
@@ -50,7 +50,7 @@ async function sendOnline() {
       let minutes = Math.floor((timeDifference % 3600000) / 60000);
       let seconds = Math.floor((timeDifference % 60000) / 1000);
 
-      let timeDifferenceHHMMSS = `${hours}:${minutes}:${seconds}`;
+      timeDifferenceHHMMSS = `${hours}:${minutes}:${seconds}`;
     }
 
     //get the difference between the last log and the current time
