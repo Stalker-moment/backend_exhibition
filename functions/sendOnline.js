@@ -34,18 +34,24 @@ async function sendOnline() {
       },
     });
 
-    //get time start downtime
-    let timeStart = downtimeData.timeStart.getTime();
+    let timeDifferenceHHMMSS;
 
-    //compare the time now and the time start downtime
-    let timeDifference = currentTime - timeStart;
+    if (!downtimeData) {
+      timeDifferenceHHMMSS = "00:00:00";
+    } else {
+      //get time start downtime
+      let timeStart = downtimeData.timeStart.getTime();
 
-    //convert time difference to format HH:MM:SS
-    let hours = Math.floor(timeDifference / 3600000);
-    let minutes = Math.floor((timeDifference % 3600000) / 60000);
-    let seconds = Math.floor((timeDifference % 60000) / 1000);
+      //compare the time now and the time start downtime
+      let timeDifference = currentTime - timeStart;
 
-    let timeDifferenceHHMMSS = `${hours}:${minutes}:${seconds}`;
+      //convert time difference to format HH:MM:SS
+      let hours = Math.floor(timeDifference / 3600000);
+      let minutes = Math.floor((timeDifference % 3600000) / 60000);
+      let seconds = Math.floor((timeDifference % 60000) / 1000);
+
+      let timeDifferenceHHMMSS = `${hours}:${minutes}:${seconds}`;
+    }
 
     //get the difference between the last log and the current time
     let difference = currentTime - lastLog;
