@@ -21,7 +21,7 @@ async function sendSensor() {
     const maxPressure = getConfiguration.maxPressure;
 
     let indexCurrent = "normal";
-      if (latestConfig.Current < maxCurrent - 1) {
+      if (latestConfig.Current < maxCurrent - 100) {
         indexCurrent = "low";
       } else if (latestConfig.Current > maxCurrent) {
         indexCurrent = "over";
@@ -36,7 +36,7 @@ async function sendSensor() {
 
     latestConfig = {
       Current: latestConfig.Current,
-      UnitCurrent: "A",
+      UnitCurrent: "mA",
       Pressure: latestConfig.Pressure,
       UnitPressure: "bar",
       indexCurrent: indexCurrent,
