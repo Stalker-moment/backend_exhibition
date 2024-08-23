@@ -97,6 +97,7 @@ wss.on("connection", async (ws, req) => {
     "/sensor-chart",
     "/sensor-logs",
     "/online",
+    "/get-config",
   ];
 
   if (!requestArray.some((endpoint) => req.url.startsWith(endpoint))) {
