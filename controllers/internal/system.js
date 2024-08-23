@@ -80,8 +80,7 @@ router.get(
 router.get("/get/current", async (req, res) => {
   try {
     const sensor = await sendCurrentSensor();
-    const sensorJson = JSON.parse(sensor);
-    return res.status(200).json({ sensorJson });
+    return res.status(200).json(sensor);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Internal server error" });
@@ -98,27 +97,42 @@ router.get("/get/button", async (req, res) => {
   }
 });
 
-router.get("/sensor/:current/:pressure", async (req, res) => {
-  let current = parseFloat(req.params.current);
+router.get("/sensor/:pressure", async (req, res) => {
   let pressure = parseFloat(req.params.pressure);
 
   if (
     // Check if any of the values are null
-    current === null ||
     pressure === null
   ) {
     return res.status(400).json({ error: "Invalid value" });
   }
 
+  const sensor = await sendCurrentSensor();
+  let current = 0;
+
+  // Check if the sensor data and status array exist
+  if (sensor && sensor.result && sensor.result.status) {
+    // Find the status object with the code "cur_current"
+    const currentStatus = sensor.result.status.find(
+      (item) => item.code === "cur_current"
+    );
+
+    // Extract the current value if it exists
+    current = currentStatus ? currentStatus.value : 0;
+
+    console.log("Current value:", current);
+  } else {
+    console.error(
+      "Sensor data is not available or does not have status information."
+    );
+    current = 0;
+  }
+
   const thresholds = 0.05;
 
   //if value current/pressure less than 0.02 make it 0.00
-  if (current < thresholds) {
-    current = 0.00;
-  }
-
   if (pressure < thresholds) {
-    pressure = 0.00;
+    pressure = 0.0;
   }
 
   try {
