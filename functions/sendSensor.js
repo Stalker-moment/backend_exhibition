@@ -41,6 +41,7 @@ async function sendSensor() {
       UnitPressure: "bar",
       indexCurrent: indexCurrent,
       indexPressure: indexPressure,
+      Power: latestConfig.Power,
       updateAt: latestConfig.updateAt,
     };
 

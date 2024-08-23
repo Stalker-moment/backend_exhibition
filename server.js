@@ -18,7 +18,7 @@ const InternalSystem = require("./controllers/internal/system");
 const internalOee = require("./controllers/internal/oee");
 const internalDownTime = require("./controllers/internal/downTime");
 const internalcount = require("./controllers/internal/count");
-const internalConfig = require("./controllers/internal/config")
+const internalConfig = require("./controllers/internal/config");
 
 // Load Functions
 const sendCommand = require("./functions/sendCommand");
@@ -37,6 +37,7 @@ const sendLamp = require("./functions/sendLamp");
 const sendSensor = require("./functions/sendSensor");
 const sendSensorChart = require("./functions/sendSensorChart");
 const sendSensorLogs = require("./functions/sendSensorLogs");
+const sendOnline = require("./functions/sendOnline");
 
 //-----------------Configuration------------------//
 app.use(bodyParser.json());
@@ -94,6 +95,7 @@ wss.on("connection", async (ws, req) => {
     "/sensor",
     "/sensor-chart",
     "/sensor-logs",
+    "/online",
   ];
 
   if (!requestArray.some((endpoint) => req.url.startsWith(endpoint))) {
@@ -265,7 +267,8 @@ wss.on("connection", async (ws, req) => {
     });
   }
 
-  if (req.url === "/receive") { //for button watcher
+  if (req.url === "/receive") {
+    //for button watcher
     //send initial data
     let data = await sendCommand();
     data = JSON.stringify(data);
@@ -288,7 +291,8 @@ wss.on("connection", async (ws, req) => {
     });
   }
 
-  if (req.url === "/lamp") { //for button watcher
+  if (req.url === "/lamp") {
+    //for button watcher
     //send initial data
     let data = await sendLamp();
     data = JSON.stringify(data);
@@ -310,7 +314,6 @@ wss.on("connection", async (ws, req) => {
       clearInterval(intervalId);
     });
   }
-
 
   if (req.url === "/oee") {
     //send initial data
@@ -385,16 +388,14 @@ wss.on("connection", async (ws, req) => {
     const url = new URL(req.url, `http://${req.headers.host}`);
     const dateParam = url.searchParams.get("date");
     let filterDate = null;
-  
+
     if (dateParam) {
       const dateRegex = /^\d{4}-\d{2}$/;
       if (dateRegex.test(dateParam)) {
         const [year, month] = dateParam.split("-").map(Number);
         filterDate = new Date(year, month - 1); // Set the start of the month
       } else {
-        ws.send(
-          JSON.stringify({ error: "Invalid date format. Use YYYY-MM." })
-        );
+        ws.send(JSON.stringify({ error: "Invalid date format. Use YYYY-MM." }));
         ws.close();
         return;
       }
@@ -402,43 +403,41 @@ wss.on("connection", async (ws, req) => {
       const today = new Date();
       filterDate = new Date(today.getFullYear(), today.getMonth()); // Current month
     }
-  
+
     // Send the initial data
     let data = await sendDowntimeLogs(filterDate);
-  
+
     data = JSON.stringify(data);
     ws.send(data);
-  
+
     // Send the data if there is a new log entry
     const intervalId = setInterval(async () => {
       let newData = await sendDowntimeLogs(filterDate);
-  
+
       if (JSON.stringify(newData) !== data) {
         data = JSON.stringify(newData);
         ws.send(data);
       }
     }, 1000);
-  
+
     ws.on("close", () => {
       console.log("WebSocket client disconnected from /downtime-logs");
       clearInterval(intervalId);
     });
   }
-  
+
   if (req.url.startsWith("/downtime-chart")) {
     const url = new URL(req.url, `http://${req.headers.host}`);
     const dateParam = url.searchParams.get("date");
     let filterDate = null;
-  
+
     if (dateParam) {
       const dateRegex = /^\d{4}-\d{2}$/;
       if (dateRegex.test(dateParam)) {
         const [year, month] = dateParam.split("-").map(Number);
         filterDate = new Date(year, month - 1); // Set the start of the month
       } else {
-        ws.send(
-          JSON.stringify({ error: "Invalid date format. Use YYYY-MM." })
-        );
+        ws.send(JSON.stringify({ error: "Invalid date format. Use YYYY-MM." }));
         ws.close();
         return;
       }
@@ -446,45 +445,45 @@ wss.on("connection", async (ws, req) => {
       const today = new Date();
       filterDate = new Date(today.getFullYear(), today.getMonth()); // Current month
     }
-  
+
     // Send the initial data
     let data = await sendDowntimeChart(filterDate);
-  
+
     data = JSON.stringify(data);
     ws.send(data);
-  
+
     // Send the data if there is a new log entry
     const intervalId = setInterval(async () => {
       let newData = await sendDowntimeChart(filterDate);
-  
+
       if (JSON.stringify(newData) !== data) {
         data = JSON.stringify(newData);
         ws.send(data);
       }
     }, 1000);
-  
+
     ws.on("close", () => {
       console.log("WebSocket client disconnected from /downtime-chart");
       clearInterval(intervalId);
     });
-  }  
+  }
 
   if (req.url === "/sensor") {
     //send initial data
     let data = await sendSensor();
     data = JSON.stringify(data);
     ws.send(data);
-  
+
     //send data if there is a new log entry
     const intervalId = setInterval(async () => {
       let newData = await sendSensor();
-  
+
       if (JSON.stringify(newData) !== data) {
         data = JSON.stringify(newData);
         ws.send(data);
       }
     }, 1000);
-  
+
     ws.on("close", () => {
       console.log("WebSocket client disconnected from /sensor");
       clearInterval(intervalId);
@@ -496,17 +495,17 @@ wss.on("connection", async (ws, req) => {
     let data = await sendSensorChart();
     data = JSON.stringify(data);
     ws.send(data);
-  
+
     //send data if there is a new log entry
     const intervalId = setInterval(async () => {
       let newData = await sendSensorChart();
-  
+
       if (JSON.stringify(newData) !== data) {
         data = JSON.stringify(newData);
         ws.send(data);
       }
     }, 1000);
-  
+
     ws.on("close", () => {
       console.log("WebSocket client disconnected from /sensor-chart");
       clearInterval(intervalId);
@@ -517,7 +516,7 @@ wss.on("connection", async (ws, req) => {
     const url = new URL(req.url, `http://${req.headers.host}`);
     const dateParam = url.searchParams.get("date");
     let filterDate = null;
-  
+
     if (dateParam) {
       const dateRegex = /^\d{4}-\d{2}-\d{2}$/; // Updated regex for YYYY-MM-DD format
       if (dateRegex.test(dateParam)) {
@@ -532,30 +531,56 @@ wss.on("connection", async (ws, req) => {
       }
     } else {
       const today = new Date();
-      filterDate = new Date(today.getFullYear(), today.getMonth(), today.getDate()); // Current date
+      filterDate = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate()
+      ); // Current date
     }
-  
+
     // Send the initial data
     let data = await sendSensorLogs(filterDate);
-  
+
     data = JSON.stringify(data);
     ws.send(data);
-  
+
     // Send the data if there is a new log entry
     const intervalId = setInterval(async () => {
       let newData = await sendSensorLogs(filterDate);
-  
+
       if (JSON.stringify(newData) !== data) {
         data = JSON.stringify(newData);
         ws.send(data);
       }
     }, 1000);
-  
+
     ws.on("close", () => {
       console.log("WebSocket client disconnected from /downtime-chart");
       clearInterval(intervalId);
     });
-  }  
+  }
+
+  if (req.url === "/online") {
+    //send initial data
+    let data = await sendOnline();
+    data = JSON.stringify(data);
+    ws.send(data);
+
+    //send data if there is a new log entry
+    const intervalId = setInterval(async () => {
+      let newData = await sendOnline();
+
+      if (JSON.stringify(newData) !== data) {
+        data = JSON.stringify(newData);
+        ws.send(data);
+      }
+    }, 1000);
+
+    ws.on("close", () => {
+      console.log("WebSocket client disconnected from /online");
+      clearInterval(intervalId);
+    });
+  }
 });
 
 // Start the server
