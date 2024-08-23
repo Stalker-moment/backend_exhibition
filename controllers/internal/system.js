@@ -80,7 +80,8 @@ router.get(
 router.get("/get/current", async (req, res) => {
   try {
     const sensor = await sendCurrentSensor();
-    return res.status(200).json({ sensor });
+    const sensorJson = JSON.parse(sensor);
+    return res.status(200).json({ sensorJson });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Internal server error" });

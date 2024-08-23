@@ -84,35 +84,27 @@ async function sendCurrentSensor() {
     accessSecret: accessSecret,
   };
 
-  getClient(config)
-    .then((client) => {
-      const url = `/v1.0/devices/${uid}`;
-      const headers = getHeaders(config, "GET", url);
+  try {
+    const client = await getClient(config);
+    const url = `/v1.0/devices/${uid}`;
+    const headers = getHeaders(config, "GET", url);
 
-      // Adding additional headers for the request
-      headers["mode"] = "cors";
-      headers["Content-Type"] = "application/json";
+    // Adding additional headers for the request
+    headers["mode"] = "cors";
+    headers["Content-Type"] = "application/json";
 
-      client
-        .get(url, { headers })
-        .then((response) => {
-          const data = response.data;
-          console.log(data);
+    const response = await client.get(url, { headers });
+    const data = response.data;
+    console.log(data);
 
-          return data;
-        })
-        .catch((error) => {
-          console.error(
-            "Error fetching devices:",
-            error.response ? error.response.data : error.message
-          );
-          return { error: "Failed to get devices" };
-        });
-    })
-    .catch((error) => {
-      console.error("Error getting client:", error);
-      return { error: "Failed to get API client" };
-    });
+    return data;
+  } catch (error) {
+    console.error(
+      "Error fetching devices:",
+      error.response ? error.response.data : error.message
+    );
+    return { error: "Failed to get devices" };
+  }
 }
 
 module.exports = sendCurrentSensor;
