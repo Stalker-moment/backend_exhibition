@@ -388,12 +388,11 @@ wss.on("connection", async (ws, req) => {
     const url = new URL(req.url, `http://${req.headers.host}`);
     const dateParam = url.searchParams.get("date");
     let filterDate = null;
-
+  
     if (dateParam) {
       const dateRegex = /^\d{4}-\d{2}$/;
       if (dateRegex.test(dateParam)) {
-        const [year, month] = dateParam.split("-").map(Number);
-        filterDate = new Date(year, month - 1); // Set the start of the month
+        filterDate = dateParam; // Keep as YYYY-MM string
       } else {
         ws.send(JSON.stringify({ error: "Invalid date format. Use YYYY-MM." }));
         ws.close();
@@ -401,30 +400,35 @@ wss.on("connection", async (ws, req) => {
       }
     } else {
       const today = new Date();
-      filterDate = new Date(today.getFullYear(), today.getMonth()); // Current month
+      filterDate = `${today.getFullYear()}-${(today.getMonth() + 1).toString().padStart(2, '0')}`; // Current month in YYYY-MM format
     }
-
-    // Send the initial data
-    let data = await sendDowntimeLogs(filterDate);
-
-    data = JSON.stringify(data);
-    ws.send(data);
-
-    // Send the data if there is a new log entry
-    const intervalId = setInterval(async () => {
-      let newData = await sendDowntimeLogs(filterDate);
-
-      if (JSON.stringify(newData) !== data) {
-        data = JSON.stringify(newData);
-        ws.send(data);
-      }
-    }, 1000);
-
-    ws.on("close", () => {
-      console.log("WebSocket client disconnected from /downtime-logs");
-      clearInterval(intervalId);
-    });
-  }
+  
+    try {
+      // Send the initial data
+      let data = await sendDowntimeLogs(filterDate);
+      data = JSON.stringify(data);
+      ws.send(data);
+  
+      // Monitor and send updates
+      const intervalId = setInterval(async () => {
+        let newData = await sendDowntimeLogs(filterDate);
+  
+        if (JSON.stringify(newData) !== data) {
+          data = JSON.stringify(newData);
+          ws.send(data);
+        }
+      }, 1000);
+  
+      ws.on("close", () => {
+        console.log("WebSocket client disconnected from /downtime-logs");
+        clearInterval(intervalId);
+      });
+    } catch (error) {
+      console.error("Error processing /downtime-logs:", error);
+      ws.send(JSON.stringify({ error: "Failed to fetch downtime logs." }));
+      ws.close();
+    }
+  }  
 
   if (req.url.startsWith("/downtime-chart")) {
     const url = new URL(req.url, `http://${req.headers.host}`);
