@@ -3,6 +3,8 @@ const router = express.Router();
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
+const sendCurrentSensor = require("../../functions/sendCurrentSensor");
+
 async function parseBoolean(value) {
   // Check if the value is a boolean true (1) or false (0)
   if (value === "1" || value === "true") {
@@ -74,6 +76,16 @@ router.get(
     }
   }
 );
+
+router.get("/get/current", async (req, res) => {
+  try {
+    const sensor = await sendCurrentSensor();
+    return res.status(200).json({ sensor });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
 
 router.get("/get/button", async (req, res) => {
   try {

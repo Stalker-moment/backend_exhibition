@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "@prisma/client": "^5.18.0",
+    "@tuya/tuya-connector-nodejs": "^2.1.2",
     "axios": "^1.7.4",
     "bcrypt": "^5.1.1",
     "body-parser": "^1.20.2",
@@ -12,6 +13,7 @@
     "http": "^0.0.1-security",
     "jsonwebtoken": "^9.0.2",
     "prisma": "^5.18.0",
+    "uuid": "^10.0.0",
     "ws": "^8.18.0"
   }
 }
