@@ -13,17 +13,20 @@ async function sendDowntimeLogs(filterMonth = null) {
     let downTime;
     let startOfMonth, endOfMonth;
 
-    // Check if filterMonth is provided and is a string
+    // Calculate the start and end of the month based on filterMonth or current date
     if (filterMonth && typeof filterMonth === 'string') {
       const [year, month] = filterMonth.split("-").map(Number);
       startOfMonth = new Date(year, month - 1, 1);
       endOfMonth = new Date(year, month, 0, 23, 59, 59, 999);
     } else {
-      // Default to the current month
       const today = new Date();
       startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
       endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59, 999);
     }
+
+    // Debug: Log the calculated dates
+    console.log("Start of Month:", startOfMonth);
+    console.log("End of Month:", endOfMonth);
 
     downTime = await prisma.downTime.findMany({
       where: {
@@ -36,6 +39,9 @@ async function sendDowntimeLogs(filterMonth = null) {
         timeStart: 'desc'
       }
     });
+
+    // Debug: Log the raw data fetched
+    console.log("Raw Downtime Logs:", downTime);
 
     // Format the timeStart and timeEnd into separate date and time fields
     downTime = downTime.map(log => {
@@ -72,6 +78,9 @@ async function sendDowntimeLogs(filterMonth = null) {
         description: log.description,
       };
     });
+
+    // Debug: Log the formatted data
+    console.log("Formatted Downtime Logs:", downTime);
 
     return downTime;
   } catch (error) {
