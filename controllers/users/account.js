@@ -71,4 +71,30 @@ router.post("/token/validator", async (req, res) => {
   }
 });
 
+router.post("/token/info", async (req, res) => {
+  const { authorization } = req.headers;
+
+  try {
+    if (!authorization) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const token = authorization.replace("Bearer ", "");
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    if (decoded.role !== "admin") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    if (decoded.expired < Date.now()) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    return res.status(200).json({ message: "Token is valid", decoded });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
 module.exports = router;
