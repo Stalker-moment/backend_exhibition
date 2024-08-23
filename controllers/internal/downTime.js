@@ -57,6 +57,16 @@ router.get("/downtime/:state", async (req, res) => {
         },
       });
 
+      //write downTime to oeeConfig
+      await prisma.oeeConfig.update({
+        where: {
+          id: 1,
+        },
+        data: {
+          onDownTime: true,
+        },
+      });
+
       return res.status(200).json({
         message: "Downtime started successfully",
         downTime,
@@ -67,6 +77,16 @@ router.get("/downtime/:state", async (req, res) => {
           .status(400)
           .json({ error: "No ongoing downtime found to stop." });
       }
+
+      //write downTime to oeeConfig
+      await prisma.oeeConfig.update({
+        where: {
+          id: 1,
+        },
+        data: {
+          onDownTime: false,
+        },
+      });
 
       // Stop the current downtime
       const timeSTart = new Date(dataDownTime.timeStart);
