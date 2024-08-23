@@ -36,7 +36,7 @@ async function sendOnline() {
 
     let timeDifferenceHHMMSS = "00:00:00";
 
-    if (!downtimeData) {
+    if (!downtime) {
       timeDifferenceHHMMSS = "00:00:00";
     } else {
       //get time start downtime
