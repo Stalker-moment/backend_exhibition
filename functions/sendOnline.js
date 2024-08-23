@@ -27,9 +27,9 @@ async function sendOnline() {
     //check if the difference is greater than 10 seconds
     //console.log(difference);
     if (difference > 10000) {
-      return { message: "Machine Offline" };
+      return { isOnline: false, message: "Machine Offline" };
     } else {
-      return { message: "Machine Online" };
+      return { isOnlineL:true, message: "Machine Online" };
     }
   } catch (error) {
     console.error("Error fetching latest log:", error);
