@@ -1,5 +1,3 @@
-import { send } from "process";
-
 const axios = require("axios");
 const crypto = require("crypto");
 
