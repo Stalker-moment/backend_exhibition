@@ -19,6 +19,7 @@ const internalOee = require("./controllers/internal/oee");
 const internalDownTime = require("./controllers/internal/downTime");
 const internalcount = require("./controllers/internal/count");
 const internalConfig = require("./controllers/internal/config");
+const internalImg = require("./controllers/internal/image");
 
 // Load Functions
 const sendCommand = require("./functions/sendCommand");
@@ -66,6 +67,7 @@ app.use("/api/internal", internalOee);
 app.use("/api/internal", internalDownTime);
 app.use("/api/internal", internalcount);
 app.use("/api/internal", internalConfig);
+app.use("/api/internal", internalImg);
 
 //handler if route not found
 app.use((req, res) => {
