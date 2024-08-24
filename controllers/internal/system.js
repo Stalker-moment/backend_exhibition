@@ -117,8 +117,13 @@ router.get("/sensor/:pressure", async (req, res) => {
       (item) => item.code === "cur_current"
     );
 
+    const powerStatus = sensor.result.status.find(
+      (item) => item.code === "cur_power" 
+    );
+
     // Extract the current value if it exists
     current = currentStatus ? currentStatus.value : 0;
+    power = powerStatus ? powerStatus.value : 0;
 
     console.log("Current value:", current);
   } else {
@@ -144,10 +149,12 @@ router.get("/sensor/:pressure", async (req, res) => {
       update: {
         Current: current,
         Pressure: pressure,
+        Power: power,
       },
       create: {
         Current: current,
         Pressure: pressure,
+        Power: power,
       },
     });
 
@@ -155,6 +162,7 @@ router.get("/sensor/:pressure", async (req, res) => {
       data: {
         Current: current,
         Pressure: pressure,
+        Power: power,
       },
     });
 
