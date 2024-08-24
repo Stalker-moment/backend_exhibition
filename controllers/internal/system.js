@@ -124,6 +124,7 @@ router.get("/sensor/:pressure", async (req, res) => {
     // Extract the current value if it exists
     current = currentStatus ? currentStatus.value : 0;
     power = powerStatus ? powerStatus.value : 0;
+    power = power / 10;
 
     console.log("Current value:", current);
   } else {
