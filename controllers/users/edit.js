@@ -193,7 +193,7 @@ router.post("/edit/others", async (req, res) => {
 
     const updatedAccount = await prisma.account.update({
       where: {
-        email: decoded.email,
+        email: email,
       },
       data: {
         password: hashedPassword,
