@@ -22,6 +22,7 @@ async function sendOutput() {
     //hitung quality
     let OK = 0;
     let NG = 0;
+    let PROCESS = 0;
 
 
     //get the last data from oeeProcess
@@ -35,7 +36,7 @@ async function sendOutput() {
 
     for (let i = 0; i < oeeProcessFiltered.length; i++) {
       if (oeeProcessFiltered[i].isOK === null) {
-        //do nothing
+        PROCESS++;
       } else if (oeeProcessFiltered[i].isOK === true) {
         OK++;
       } else {
@@ -56,6 +57,9 @@ async function sendOutput() {
       Done: total,
       Open: open,
       target: target,
+      OK: OK,
+      NG: NG,
+      PROCESS: PROCESS,
     };
 
     console.log("Latest log entry:", jsonOutput);
