@@ -36,7 +36,7 @@ async function sendOutput() {
 
     for (let i = 0; i < oeeProcessFiltered.length; i++) {
       if (oeeProcessFiltered[i].isOK === null) {
-        PROCESS == true;
+        PROCESS = true;
       } else if (oeeProcessFiltered[i].isOK === true) {
         OK++;
       } else {
