@@ -22,7 +22,7 @@ async function sendOutput() {
     //hitung quality
     let OK = 0;
     let NG = 0;
-    let PROCESS = 0;
+    let PROCESS = false;
 
 
     //get the last data from oeeProcess
@@ -36,7 +36,7 @@ async function sendOutput() {
 
     for (let i = 0; i < oeeProcessFiltered.length; i++) {
       if (oeeProcessFiltered[i].isOK === null) {
-        PROCESS++;
+        PROCESS == true;
       } else if (oeeProcessFiltered[i].isOK === true) {
         OK++;
       } else {
