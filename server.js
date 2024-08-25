@@ -40,6 +40,7 @@ const sendSensorChart = require("./functions/sendSensorChart");
 const sendSensorLogs = require("./functions/sendSensorLogs");
 const sendOnline = require("./functions/sendOnline");
 const sendConfig = require("./functions/sendConfig");
+const sendAccount = require("./functions/sendAccount");
 
 //-----------------Configuration------------------//
 app.use(bodyParser.json());
@@ -100,6 +101,7 @@ wss.on("connection", async (ws, req) => {
     "/sensor-logs",
     "/online",
     "/get-config",
+    "/accounts",
   ];
 
   if (!requestArray.some((endpoint) => req.url.startsWith(endpoint))) {
@@ -611,6 +613,37 @@ wss.on("connection", async (ws, req) => {
       clearInterval(intervalId);
     });
   }
+
+  if (req.url.startsWith("/accounts")) {
+    const url = new URL(req.url, `http://${req.headers.host}`);
+    const searchKeyword = url.searchParams.get("search") || ""; // Default to empty string if no search query
+    
+    try {
+      // Send the initial data
+      let data = await sendAccount(searchKeyword);
+      data = JSON.stringify(data);
+      ws.send(data);
+  
+      // Monitor and send updates (if needed)
+      const intervalId = setInterval(async () => {
+        let newData = await sendAccount(searchKeyword);
+  
+        if (JSON.stringify(newData) !== data) {
+          data = JSON.stringify(newData);
+          ws.send(data);
+        }
+      }, 1000);
+  
+      ws.on("close", () => {
+        console.log("WebSocket client disconnected from /accounts");
+        clearInterval(intervalId);
+      });
+    } catch (error) {
+      console.error("Error processing /accounts:", error);
+      ws.send(JSON.stringify({ error: "Failed to fetch accounts." }));
+      ws.close();
+    }
+  }  
 });
 
 // Start the server
