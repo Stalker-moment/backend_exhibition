@@ -24,6 +24,7 @@ async function sendOutput() {
     let NG = 0;
     let PROCESS = false;
 
+    PROCESS = oeeProcess.some((log) => log.isOK === null);
 
     //get the last data from oeeProcess
     const oeeProcessLast = oeeProcessFiltered[oeeProcessFiltered.length - 1];
@@ -32,11 +33,11 @@ async function sendOutput() {
     const total = oeeProcessLast.process;
 
     const open = target - total;
-    let percent = (total / target) * 100
+    let percent = (total / target) * 100;
 
     for (let i = 0; i < oeeProcessFiltered.length; i++) {
       if (oeeProcessFiltered[i].isOK === null) {
-        PROCESS = true;
+        //do nothing
       } else if (oeeProcessFiltered[i].isOK === true) {
         OK++;
       } else {
