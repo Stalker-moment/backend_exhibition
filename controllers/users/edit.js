@@ -244,16 +244,28 @@ router.post("/edit/delete", async (req, res) => {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
-    //delete account
-    const deletedAccount = await prisma.account.delete({
-      where: {
-        email: email,
-      },
+    if(email === decoded.email){
+      return res.status(400).json({ error: "Cannot delete your own account" });
+    }
+
+    // Find the account
+    const account = await prisma.account.findUnique({
+      where: { email: email },
     });
 
-    if (!deletedAccount) {
-      return res.status(500).json({ error: "Failed to delete account" });
+    if (!account) {
+      return res.status(404).json({ error: "Account not found" });
     }
+
+    // Delete the related contact first
+    await prisma.contact.delete({
+      where: { id: account.id },
+    });
+
+    // Now delete the account
+    const deletedAccount = await prisma.account.delete({
+      where: { email: email },
+    });
 
     return res.status(200).json({ message: `Succes delete account (${email}) by (${decoded.email})` });
   } catch (error) {
