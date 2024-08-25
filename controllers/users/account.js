@@ -82,10 +82,6 @@ router.post("/token/info", async (req, res) => {
     const token = authorization.replace("Bearer ", "");
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    if (decoded.role !== "admin") {
-      return res.status(401).json({ error: "Unauthorized" });
-    }
-
     if (decoded.expired < Date.now()) {
       return res.status(401).json({ error: "Unauthorized" });
     }

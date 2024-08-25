@@ -8,7 +8,7 @@ const dotenv = require("dotenv");
 dotenv.config();
 
 router.post("/edit", async (req, res) => {
-  const { password, firstName, lastName, phone } = req.body;
+  const { password, firstName, lastName, phone, noReg } = req.body;
   const { authorization } = req.headers;
 
   try {
@@ -62,6 +62,11 @@ router.post("/edit", async (req, res) => {
       phoned = phone;
     }
 
+    let noReg = account.contact.noReg;
+    if (noReg) {
+      noReg = noReg;
+    }
+
     const updatedAccount = await prisma.account.update({
       where: {
         email: decoded.email,
@@ -74,6 +79,7 @@ router.post("/edit", async (req, res) => {
             firstName: firstNamed,
             lastName: lastNamed,
             phone: phoned,
+            noReg: noReg,
           },
         },
       },
