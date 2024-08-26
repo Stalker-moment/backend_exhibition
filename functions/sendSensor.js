@@ -17,8 +17,8 @@ async function sendSensor() {
 
     // Get maxCurrent and maxPressure from configuration
     const getConfiguration = await prisma.oeeConfig.findFirst();
-    const maxCurrent = getConfiguration.maxCurrent;
-    const maxPressure = getConfiguration.maxPressure + 100;
+    const maxCurrent = getConfiguration.maxCurrent + 100;
+    const maxPressure = getConfiguration.maxPressure;
 
     let indexCurrent = "normal";
       if (latestConfig.Current < maxCurrent - 100) {
