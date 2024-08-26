@@ -14,6 +14,23 @@ async function sendOutput() {
       },
     });
 
+    if(!oeeProcess){
+      //read from oeeConfig
+      const oeeConfig = await prisma.oeeConfig.findFirst();
+      const jsonOutput = {
+        batchNumber: oeeConfig.idNow,
+        percentage: 0,
+        Done: 0,
+        Open: 0,
+        target: oeeConfig.target,
+        OK: 0,
+        NG: 0,
+        PROCESS: false,
+      };
+      return jsonOutput;
+    }
+
+
     //filter data oeeProcess yang isOK nya null tidak dihitung
     const oeeProcessFiltered = oeeProcess.filter((log) => {
       return log.isOK !== null;
