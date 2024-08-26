@@ -14,7 +14,8 @@ async function sendOutput() {
       },
     });
 
-    if(!oeeProcess){
+    //if oeeProcess is empty
+    if (oeeProcess.length === 0) {
       //read from oeeConfig
       const oeeConfig = await prisma.oeeConfig.findFirst();
       const jsonOutput = {
