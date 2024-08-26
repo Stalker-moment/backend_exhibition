@@ -63,7 +63,7 @@ async function sendOutput() {
       PROCESS: PROCESS,
     };
 
-    console.log("Latest log entry:", jsonOutput);
+    //console.log("Latest log entry:", jsonOutput);
 
     return jsonOutput; // Return the latest log entry
   } catch (error) {
