@@ -48,6 +48,13 @@ async function sendOEE() {
     const idealTime = DataBefore.targetCycleTimeOK;
     let totalCycleTime = 0;
 
+    //ubah processTime jika di bawah targetCycleTimeOK menjadi targetCycleTimeOK
+    for (let i = 0; i < oeeProcessFiltered.length; i++) {
+      if (oeeProcessFiltered[i].processTime < DataBefore.targetCycleTimeOK) {
+        oeeProcessFiltered[i].processTime = DataBefore.targetCycleTimeOK;
+      }
+    }
+
     for (let i = 0; i < oeeProcessFiltered.length; i++) {
       totalCycleTime += oeeProcessFiltered[i].processTime;
     }
