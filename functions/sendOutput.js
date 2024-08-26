@@ -23,7 +23,7 @@ async function sendOutput() {
         percentage: 0,
         Done: 0,
         Open: 0,
-        target: oeeConfig.target,
+        target: oeeConfig.targetProduction,
         OK: 0,
         NG: 0,
         PROCESS: false,
