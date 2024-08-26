@@ -7,7 +7,16 @@ const prisma = new PrismaClient();
 const dotenv = require("dotenv");
 dotenv.config();
 
-router.post("/login", async (req, res) => {
+//apply cors 
+const cors = require("cors");
+
+//set cors
+const corsOptions = {
+  origin: "machine.akti.cloud",
+  optionsSuccessStatus: 200,
+};
+
+router.post("/login", cors(corsOptions), async (req, res) => {
   const { email, password } = req.body;
 
   try {
