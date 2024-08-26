@@ -103,6 +103,7 @@ wss.on("connection", async (ws, req) => {
     "/online",
     "/get-config",
     "/accounts",
+    "/normal",
   ];
 
   if (!requestArray.some((endpoint) => req.url.startsWith(endpoint))) {
