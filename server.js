@@ -41,6 +41,7 @@ const sendSensorLogs = require("./functions/sendSensorLogs");
 const sendOnline = require("./functions/sendOnline");
 const sendConfig = require("./functions/sendConfig");
 const sendAccount = require("./functions/sendAccount");
+const sendNormal = require("./functions/sendNormal");
 
 //-----------------Configuration------------------//
 app.use(bodyParser.json());
@@ -588,6 +589,28 @@ wss.on("connection", async (ws, req) => {
 
     ws.on("close", () => {
       console.log("WebSocket client disconnected from /online");
+      clearInterval(intervalId);
+    });
+  }
+
+  if (req.url === "/normal") {
+    //send initial data
+    let data = await sendNormal();
+    data = JSON.stringify(data);
+    ws.send(data);
+
+    //send data if there is a new log entry
+    const intervalId = setInterval(async () => {
+      let newData = await sendNormal();
+
+      if (JSON.stringify(newData) !== data) {
+        data = JSON.stringify(newData);
+        ws.send(data);
+      }
+    }, 1000);
+
+    ws.on("close", () => {
+      console.log("WebSocket client disconnected from /normal");
       clearInterval(intervalId);
     });
   }
