@@ -22,7 +22,7 @@ async function sendOutput() {
         batchNumber: oeeConfig.idNow,
         percentage: 0,
         Done: 0,
-        Open: 0,
+        Open: oeeConfig.targetProduction,
         target: oeeConfig.targetProduction,
         OK: 0,
         NG: 0,

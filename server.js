@@ -396,7 +396,7 @@ wss.on("connection", async (ws, req) => {
     const url = new URL(req.url, `http://${req.headers.host}`);
     const dateParam = url.searchParams.get("date");
     let filterDate = null;
-  
+
     if (dateParam) {
       const dateRegex = /^\d{4}-\d{2}$/;
       if (dateRegex.test(dateParam)) {
@@ -408,25 +408,27 @@ wss.on("connection", async (ws, req) => {
       }
     } else {
       const today = new Date();
-      filterDate = `${today.getFullYear()}-${(today.getMonth() + 1).toString().padStart(2, '0')}`; // Current month in YYYY-MM format
+      filterDate = `${today.getFullYear()}-${(today.getMonth() + 1)
+        .toString()
+        .padStart(2, "0")}`; // Current month in YYYY-MM format
     }
-  
+
     try {
       // Send the initial data
       let data = await sendDowntimeLogs(filterDate);
       data = JSON.stringify(data);
       ws.send(data);
-  
+
       // Monitor and send updates
       const intervalId = setInterval(async () => {
         let newData = await sendDowntimeLogs(filterDate);
-  
+
         if (JSON.stringify(newData) !== data) {
           data = JSON.stringify(newData);
           ws.send(data);
         }
       }, 1000);
-  
+
       ws.on("close", () => {
         console.log("WebSocket client disconnected from /downtime-logs");
         clearInterval(intervalId);
@@ -436,7 +438,7 @@ wss.on("connection", async (ws, req) => {
       ws.send(JSON.stringify({ error: "Failed to fetch downtime logs." }));
       ws.close();
     }
-  }  
+  }
 
   if (req.url.startsWith("/downtime-chart")) {
     const url = new URL(req.url, `http://${req.headers.host}`);
@@ -582,10 +584,8 @@ wss.on("connection", async (ws, req) => {
     const intervalId = setInterval(async () => {
       let newData = await sendOnline();
 
-      if (JSON.stringify(newData) !== data) {
-        data = JSON.stringify(newData);
-        ws.send(data);
-      }
+      data = JSON.stringify(newData);
+      ws.send(data);
     }, 1000);
 
     ws.on("close", () => {
@@ -641,23 +641,23 @@ wss.on("connection", async (ws, req) => {
   if (req.url.startsWith("/accounts")) {
     const url = new URL(req.url, `http://${req.headers.host}`);
     const searchKeyword = url.searchParams.get("search") || ""; // Default to empty string if no search query
-    
+
     try {
       // Send the initial data
       let data = await sendAccount(searchKeyword);
       data = JSON.stringify(data);
       ws.send(data);
-  
+
       // Monitor and send updates (if needed)
       const intervalId = setInterval(async () => {
         let newData = await sendAccount(searchKeyword);
-  
+
         if (JSON.stringify(newData) !== data) {
           data = JSON.stringify(newData);
           ws.send(data);
         }
       }, 1000);
-  
+
       ws.on("close", () => {
         console.log("WebSocket client disconnected from /accounts");
         clearInterval(intervalId);
@@ -667,7 +667,7 @@ wss.on("connection", async (ws, req) => {
       ws.send(JSON.stringify({ error: "Failed to fetch accounts." }));
       ws.close();
     }
-  }  
+  }
 });
 
 // Start the server
