@@ -8,37 +8,31 @@ const accessSecret = "b52595f26b634d6ab3c48ba5e4486cb3";
 let cachedToken = null;
 let cachedTokenRes = null;
 
-function getClient(config) {
+async function getClient(config) {
   if (!cachedToken) {
-    return getToken(config).then((tokenRes) => {
-      if (tokenRes.success) {
-        cachedToken = tokenRes.result.access_token;
-        cachedTokenRes = tokenRes.result;
-      } else {
-        throw new Error("Unable to obtain access token.");
-      }
-      return axios.create({ baseURL: config.endpoint });
-    });
+    await refreshToken(config);
   }
-  return Promise.resolve(axios.create({ baseURL: config.endpoint }));
+  return axios.create({ baseURL: config.endpoint });
 }
 
-function getToken(config, refreshToken = "") {
+async function refreshToken(config, refreshToken = "") {
   const url = refreshToken
     ? `/v1.0/token/${refreshToken}`
     : "/v1.0/token?grant_type=1";
   const headers = getHeaders(config, "GET", url);
 
-  return axios
-    .get(config.endpoint + url, { headers })
-    .then((response) => {
-      console.log(response.data);
-      return response.data;
-    })
-    .catch((error) => {
-      console.error("Error getting token:", error);
-      throw error;
-    });
+  try {
+    const response = await axios.get(config.endpoint + url, { headers });
+    if (response.data.success) {
+      cachedToken = response.data.result.access_token;
+      cachedTokenRes = response.data.result;
+    } else {
+      throw new Error("Unable to obtain access token.");
+    }
+  } catch (error) {
+    console.error("Error getting token:", error);
+    throw error;
+  }
 }
 
 function getHeaders(config, method, url, body = "", appendHeaders = {}) {
@@ -93,7 +87,14 @@ async function sendCurrentSensor() {
     headers["mode"] = "cors";
     headers["Content-Type"] = "application/json";
 
-    const response = await client.get(url, { headers });
+    let response = await client.get(url, { headers });
+    if (response.status === 401) {  // If token is invalid
+      console.log("Token expired, refreshing token...");
+      await refreshToken(config);
+      // Retry the request with the new token
+      response = await client.get(url, { headers: getHeaders(config, "GET", url) });
+    }
+
     const data = response.data;
     console.log(data);
 
