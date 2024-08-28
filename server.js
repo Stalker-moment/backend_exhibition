@@ -356,11 +356,8 @@ wss.on("connection", async (ws, req) => {
 
     const intervalId = setInterval(async () => {
       let newData = await sendOutput();
-
-      if (JSON.stringify(newData) !== data) {
-        data = JSON.stringify(newData);
-        ws.send(data);
-      }
+      data = JSON.stringify(newData);
+      ws.send(data);
     }, 1000);
 
     ws.on("close", () => {
