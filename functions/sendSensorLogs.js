@@ -52,7 +52,7 @@ async function sendSensorLogs(filterDate = null) {
 
     // Get maxCurrent and maxPressure from configuration
     const getConfiguration = await prisma.oeeConfig.findFirst();
-    const maxCurrent = getConfiguration.maxCurrent;
+    const maxCurrent = 150 + 100;
     const maxPressure = getConfiguration.maxPressure;
 
     // Format the timestamp into a time string in HH:MM:SS format and calculate indexes
