@@ -88,7 +88,7 @@ async function sendCurrentSensor() {
     headers["Content-Type"] = "application/json";
 
     let response = await client.get(url, { headers });
-    if (response.status === 401) {  // If token is invalid
+    if (response.data.code === 1010) {  // If token is invalid
       console.log("Token expired, refreshing token...");
       await refreshToken(config);
       // Retry the request with the new token
