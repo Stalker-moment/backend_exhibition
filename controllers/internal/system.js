@@ -109,6 +109,7 @@ router.get("/sensor/:pressure", async (req, res) => {
 
   const sensor = await sendCurrentSensor();
   let current = 0;
+  let power = 0;
 
   // Check if the sensor data and status array exist
   if (sensor && sensor.result && sensor.result.status) {
